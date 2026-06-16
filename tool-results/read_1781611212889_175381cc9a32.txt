@@ -1,0 +1,674 @@
+     1→"use client";
+     2→
+     3→import { useState, useMemo, useCallback } from "react";
+     4→import { useGraphinyaStore } from "@/lib/store";
+     5→import { useGraphinyaApi } from "@/hooks/use-grafinya-api";
+     6→import { DEMO_DATASOURCES, generateTimeSeriesData } from "@/lib/demo-data";
+     7→import { Button } from "@/components/ui/button";
+     8→import { Textarea } from "@/components/ui/textarea";
+     9→import { Label } from "@/components/ui/label";
+    10→import { Badge } from "@/components/ui/badge";
+    11→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+    12→import {
+    13→  Select,
+    14→  SelectContent,
+    15→  SelectItem,
+    16→  SelectTrigger,
+    17→  SelectValue,
+    18→} from "@/components/ui/select";
+    19→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    20→import {
+    21→  Search,
+    22→  Play,
+    23→  Loader2,
+    24→  Code2,
+    25→  Table2,
+    26→  BarChart3,
+    27→  Copy,
+    28→  CheckCircle2,
+    29→  AlertCircle,
+    30→  Clock,
+    31→  History,
+    32→  TrendingUp,
+    33→  Activity,
+    34→  Save,
+    35→  Trash2,
+    36→} from "lucide-react";
+    37→import {
+    38→  LineChart,
+    39→  Line,
+    40→  BarChart,
+    41→  Bar,
+    42→  XAxis,
+    43→  YAxis,
+    44→  CartesianGrid,
+    45→  Tooltip,
+    46→  ResponsiveContainer,
+    47→  AreaChart,
+    48→  Area,
+    49→  PieChart,
+    50→  Pie,
+    51→  Cell,
+    52→  Legend,
+    53→} from "recharts";
+    54→import { useToast } from "@/hooks/use-toast";
+    55→
+    56→const CHART_COLORS = ["#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4"];
+    57→
+    58→const DEMO_QUERIES = [
+    59→  {
+    60→    label: "CPU метрики",
+    61→    query: 'metric="cpu_usage"',
+    62→    type: "prometheus",
+    63→    icon: "📈",
+    64→  },
+    65→  {
+    66→    label: "SQL запрос",
+    67→    query: "SELECT time, value FROM metrics WHERE metric = 'requests' LIMIT 50",
+    68→    type: "postgres",
+    69→    icon: "🗃️",
+    70→  },
+    71→  {
+    72→    label: "ClickHouse аналитика",
+    73→    query: "SELECT toStartOfHour(timestamp) as h, count() as cnt FROM events GROUP BY h ORDER BY h DESC LIMIT 24",
+    74→    type: "clickhouse",
+    75→    icon: "📊",
+    76→  },
+    77→  {
+    78→    label: "Elasticsearch агрегация",
+    79→    query: '{"aggs":{"by_level":{"terms":{"field":"level"}}}}',
+    80→    type: "elasticsearch",
+    81→    icon: "🔍",
+    82→  },
+    83→  {
+    84→    label: "GitLab pipelines",
+    85→    query: '{"project":"grafinya-frontend","scope":"finished"}',
+    86→    type: "gitlab",
+    87→    icon: "🦊",
+    88→  },
+    89→];
+    90→
+    91→const tooltipStyle = {
+    92→  backgroundColor: "var(--popover)",
+    93→  border: "1px solid var(--border)",
+    94→  borderRadius: "8px",
+    95→  fontSize: "12px",
+    96→};
+    97→
+    98→interface SavedQuery {
+    99→  id: string;
+   100→  name: string;
+   101→  query: string;
+   102→  dataSourceId: string;
+   103→  createdAt: string;
+   104→}
+   105→
+   106→export function ExplorerView() {
+   107→  const { connectionStatus, dataSources, isDemoMode, setDataSources } = useGraphinyaStore();
+   108→  const { call } = useGraphinyaApi();
+   109→  const { toast } = useToast();
+   110→  const isConnected = connectionStatus === "connected" || connectionStatus === "demo";
+   111→
+   112→  const [selectedDs, setSelectedDs] = useState<string>("");
+   113→  const [query, setQuery] = useState("");
+   114→  const [running, setRunning] = useState(false);
+   115→  const [result, setResult] = useState<unknown>(null);
+   116→  const [error, setError] = useState<string | null>(null);
+   117→  const [copied, setCopied] = useState(false);
+   118→  const [history, setHistory] = useState<string[]>([]);
+   119→  const [resultTab, setResultTab] = useState("chart");
+   120→  const [chartType, setChartType] = useState<"line" | "bar" | "area">("area");
+   121→  const [savedQueries, setSavedQueries] = useState<SavedQuery[]>([]);
+   122→  const [showSaveDialog, setShowSaveDialog] = useState(false);
+   123→  const [saveName, setSaveName] = useState("");
+   124→
+   125→  const chartData = useMemo(() => generateTimeSeriesData(20), []);
+   126→
+   127→  // Load data sources in demo mode
+   128→  const activeDataSources = useMemo(() => {
+   129→    if (connectionStatus === "demo") {
+   130→      return dataSources.length > 0 ? dataSources : DEMO_DATASOURCES;
+   131→    }
+   132→    return dataSources;
+   133→  }, [connectionStatus, dataSources]);
+   134→
+   135→  const handleRun = async () => {
+   136→    if (!query.trim()) return;
+   137→    setRunning(true);
+   138→    setError(null);
+   139→    setResultTab("chart");
+   140→    setHistory((prev) => [query, ...prev.filter((q) => q !== query)].slice(0, 20));
+   141→
+   142→    try {
+   143→      if (connectionStatus === "demo") {
+   144→        await new Promise((r) => setTimeout(r, 600));
+   145→        setResult({
+   146→          status: 200,
+   147→          frames: [
+   148→            {
+   149→              refID: "A",
+   150→              fields: [
+   151→                {
+   152→                  name: "Результат запроса",
+   153→                  refID: "A",
+   154→                  values: chartData.slice(0, 12).map((d) => ({
+   155→                    time: d.time,
+   156→                    value: d.cpu,
+   157→                    memory: d.memory,
+   158→                    requests: d.requests,
+   159→                    errors: d.errors,
+   160→                  })),
+   161→                },
+   162→              ],
+   163→            },
+   164→          ],
+   165→        });
+   166→      } else if (connectionStatus === "connected" && selectedDs) {
+   167→        const data = await call({
+   168→          path: "/query",
+   169→          method: "POST",
+   170→          body: {
+   171→            dataSourceId: selectedDs,
+   172→            queries: [
+   173→              {
+   174→                refID: "A",
+   175→                maxDataPoints: 100,
+   176→                timeRange: { from: Date.now() / 1000 - 3600, to: Date.now() / 1000 },
+   177→                json: query,
+   178→              },
+   179→            ],
+   180→          },
+   181→        });
+   182→        setResult(data);
+   183→      }
+   184→      toast({ title: "Запрос выполнен", description: "Результаты получены успешно" });
+   185→    } catch (err) {
+   186→      setError(err instanceof Error ? err.message : "Ошибка выполнения запроса");
+   187→      toast({ title: "Ошибка запроса", description: "Не удалось выполнить запрос", variant: "destructive" });
+   188→    } finally {
+   189→      setRunning(false);
+   190→    }
+   191→  };
+   192→
+   193→  const handleCopy = (text: string) => {
+   194→    navigator.clipboard.writeText(text);
+   195→    setCopied(true);
+   196→    setTimeout(() => setCopied(false), 2000);
+   197→    toast({ title: "Скопировано в буфер обмена" });
+   198→  };
+   199→
+   200→  const handleSaveQuery = () => {
+   201→    if (!saveName.trim()) return;
+   202→    const saved: SavedQuery = {
+   203→      id: `sq-${Date.now()}`,
+   204→      name: saveName,
+   205→      query,
+   206→      dataSourceId: selectedDs,
+   207→      createdAt: new Date().toISOString(),
+   208→    };
+   209→    setSavedQueries((prev) => [saved, ...prev]);
+   210→    setShowSaveDialog(false);
+   211→    setSaveName("");
+   212→    toast({ title: "Запрос сохранён", description: saveName });
+   213→  };
+   214→
+   215→  const handleDeleteSaved = (id: string) => {
+   216→    setSavedQueries((prev) => prev.filter((q) => q.id !== id));
+   217→    toast({ title: "Запрос удалён" });
+   218→  };
+   219→
+   220→  return (
+   221→    <div className="space-y-6">
+   222→      {/* Header */}
+   223→      <div>
+   224→        <h2 className="text-2xl font-bold tracking-tight">Исследование данных</h2>
+   225→        <p className="text-muted-foreground">
+   226→          Выполняйте запросы к источникам данных и визуализируйте результаты
+   227→        </p>
+   228→      </div>
+   229→
+   230→      {/* Disconnected banner */}
+   231→      {!isConnected && (
+   232→        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
+   233→          <Search className="h-5 w-5 text-amber-500 shrink-0" />
+   234→          <p className="text-sm text-amber-600 dark:text-amber-400">
+   235→            Подключитесь к серверу или включите демо-режим для выполнения запросов.
+   236→          </p>
+   237→        </div>
+   238→      )}
+   239→
+   240→      {isConnected && (
+   241→        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+   242→          {/* Query panel */}
+   243→          <div className="lg:col-span-2 space-y-4">
+   244→            <Card>
+   245→              <CardHeader className="pb-3">
+   246→                <CardTitle className="text-base flex items-center gap-2">
+   247→                  <Code2 className="h-4 w-4 text-amber-500" />
+   248→                  Запрос
+   249→                </CardTitle>
+   250→              </CardHeader>
+   251→              <CardContent className="space-y-4">
+   252→                {/* Data source selector */}
+   253→                <div className="space-y-2">
+   254→                  <Label className="text-xs text-muted-foreground">Источник данных</Label>
+   255→                  <Select value={selectedDs} onValueChange={setSelectedDs}>
+   256→                    <SelectTrigger>
+   257→                      <SelectValue placeholder="Выберите источник" />
+   258→                    </SelectTrigger>
+   259→                    <SelectContent>
+   260→                      {activeDataSources.map((ds) => (
+   261→                        <SelectItem key={ds._id} value={ds._id}>
+   262→                          {ds.name} ({ds.pluginId})
+   263→                        </SelectItem>
+   264→                      ))}
+   265→                    </SelectContent>
+   266→                  </Select>
+   267→                </div>
+   268→
+   269→                {/* Query editor */}
+   270→                <div className="space-y-2">
+   271→                  <Label className="text-xs text-muted-foreground">Запрос</Label>
+   272→                  <Textarea
+   273→                    placeholder='Введите запрос... Например: metric="cpu_usage"'
+   274→                    value={query}
+   275→                    onChange={(e) => setQuery(e.target.value)}
+   276→                    className="font-mono text-sm min-h-[120px] resize-y"
+   277→                    onKeyDown={(e) => {
+   278→                      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+   279→                        handleRun();
+   280→                      }
+   281→                    }}
+   282→                  />
+   283→                  <div className="flex items-center justify-between">
+   284→                    <p className="text-[10px] text-muted-foreground">
+   285→                      Ctrl+Enter для выполнения
+   286→                    </p>
+   287→                    <div className="flex gap-1">
+   288→                      <Button
+   289→                        variant="ghost"
+   290→                        size="sm"
+   291→                        className="h-6 text-[10px]"
+   292→                        onClick={() => query && setShowSaveDialog(true)}
+   293→                        disabled={!query.trim()}
+   294→                      >
+   295→                        <Save className="h-3 w-3 mr-1" />
+   296→                        Сохранить
+   297→                      </Button>
+   298→                    </div>
+   299→                  </div>
+   300→                </div>
+   301→
+   302→                {/* Action buttons */}
+   303→                <div className="flex items-center gap-2">
+   304→                  <Button
+   305→                    onClick={handleRun}
+   306→                    disabled={running || (!selectedDs && !isDemoMode) || !query.trim()}
+   307→                    className="bg-amber-500 hover:bg-amber-600 text-white"
+   308→                  >
+   309→                    {running ? (
+   310→                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+   311→                    ) : (
+   312→                      <Play className="h-4 w-4 mr-2" />
+   313→                    )}
+   314→                    Выполнить
+   315→                  </Button>
+   316→                  <Button variant="outline" onClick={() => { setQuery(""); setResult(null); setError(null); }} size="sm">
+   317→                    Очистить
+   318→                  </Button>
+   319→                </div>
+   320→
+   321→                {/* Quick queries */}
+   322→                <div className="space-y-2">
+   323→                  <Label className="text-xs text-muted-foreground">Быстрые запросы</Label>
+   324→                  <div className="flex flex-wrap gap-2">
+   325→                    {DEMO_QUERIES.map((q) => (
+   326→                      <Button
+   327→                        key={q.label}
+   328→                        variant="outline"
+   329→                        size="sm"
+   330→                        className="text-xs"
+   331→                        onClick={() => setQuery(q.query)}
+   332→                      >
+   333→                        <span className="mr-1">{q.icon}</span>
+   334→                        {q.label}
+   335→                        <Badge variant="secondary" className="text-[8px] ml-1.5 px-1">
+   336→                          {q.type}
+   337→                        </Badge>
+   338→                      </Button>
+   339→                    ))}
+   340→                  </div>
+   341→                </div>
+   342→              </CardContent>
+   343→            </Card>
+   344→
+   345→            {/* Results */}
+   346→            {(result || error) && (
+   347→              <Card>
+   348→                <CardHeader className="pb-3">
+   349→                  <div className="flex items-center justify-between">
+   350→                    <CardTitle className="text-base flex items-center gap-2">
+   351→                      {error ? (
+   352→                        <AlertCircle className="h-4 w-4 text-red-500" />
+   353→                      ) : (
+   354→                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+   355→                      )}
+   356→                      Результат
+   357→                      {result && (
+   358→                        <Badge variant="secondary" className="text-xs ml-2">
+   359→                          200 OK
+   360→                        </Badge>
+   361→                      )}
+   362→                    </CardTitle>
+   363→                    {/* Chart type selector */}
+   364→                    {result && !error && (
+   365→                      <div className="flex gap-1">
+   366→                        {(["area", "line", "bar"] as const).map((ct) => (
+   367→                          <Button
+   368→                            key={ct}
+   369→                            variant={chartType === ct ? "secondary" : "ghost"}
+   370→                            size="sm"
+   371→                            className="h-6 text-[10px] px-2"
+   372→                            onClick={() => setChartType(ct)}
+   373→                          >
+   374→                            {ct === "area" ? <Activity className="h-3 w-3" /> : ct === "line" ? <TrendingUp className="h-3 w-3" /> : <BarChart3 className="h-3 w-3" />}
+   375→                          </Button>
+   376→                        ))}
+   377→                      </div>
+   378→                    )}
+   379→                  </div>
+   380→                </CardHeader>
+   381→                <CardContent>
+   382→                  {error ? (
+   383→                    <div className="bg-red-500/10 text-red-600 dark:text-red-400 text-sm p-4 rounded-lg">
+   384→                      {error}
+   385→                    </div>
+   386→                  ) : (
+   387→                    <Tabs value={resultTab} onValueChange={setResultTab}>
+   388→                      <TabsList className="mb-3">
+   389→                        <TabsTrigger value="chart" className="text-xs">
+   390→                          <BarChart3 className="h-3 w-3 mr-1" />
+   391→                          График
+   392→                        </TabsTrigger>
+   393→                        <TabsTrigger value="table" className="text-xs">
+   394→                          <Table2 className="h-3 w-3 mr-1" />
+   395→                          Таблица
+   396→                        </TabsTrigger>
+   397→                        <TabsTrigger value="json" className="text-xs">
+   398→                          <Code2 className="h-3 w-3 mr-1" />
+   399→                          JSON
+   400→                        </TabsTrigger>
+   401→                      </TabsList>
+   402→                      <TabsContent value="chart">
+   403→                        <div className="h-72">
+   404→                          <ResponsiveContainer width="100%" height="100%">
+   405→                            {chartType === "area" ? (
+   406→                              <AreaChart data={chartData.slice(0, 12)}>
+   407→                                <defs>
+   408→                                  <linearGradient id="explorerGrad" x1="0" y1="0" x2="0" y2="1">
+   409→                                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+   410→                                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+   411→                                  </linearGradient>
+   412→                                  <linearGradient id="explorerGrad2" x1="0" y1="0" x2="0" y2="1">
+   413→                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+   414→                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+   415→                                  </linearGradient>
+   416→                                </defs>
+   417→                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+   418→                                <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+   419→                                <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+   420→                                <Tooltip contentStyle={tooltipStyle} />
+   421→                                <Legend />
+   422→                                <Area type="monotone" dataKey="cpu" stroke="#f59e0b" fill="url(#explorerGrad)" strokeWidth={2} name="CPU %" />
+   423→                                <Area type="monotone" dataKey="memory" stroke="#10b981" fill="url(#explorerGrad2)" strokeWidth={2} name="Memory %" />
+   424→                              </AreaChart>
+   425→                            ) : chartType === "line" ? (
+   426→                              <LineChart data={chartData.slice(0, 12)}>
+   427→                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+   428→                                <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+   429→                                <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+   430→                                <Tooltip contentStyle={tooltipStyle} />
+   431→                                <Legend />
+   432→                                <Line type="monotone" dataKey="cpu" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} name="CPU %" />
+   433→                                <Line type="monotone" dataKey="memory" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="Memory %" />
+   434→                              </LineChart>
+   435→                            ) : (
+   436→                              <BarChart data={chartData.slice(0, 12)}>
+   437→                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+   438→                                <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+   439→                                <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+   440→                                <Tooltip contentStyle={tooltipStyle} />
+   441→                                <Legend />
+   442→                                <Bar dataKey="cpu" fill="#f59e0b" radius={[3, 3, 0, 0]} name="CPU %" />
+   443→                                <Bar dataKey="memory" fill="#10b981" radius={[3, 3, 0, 0]} name="Memory %" />
+   444→                              </BarChart>
+   445→                            )}
+   446→                          </ResponsiveContainer>
+   447→                        </div>
+   448→                      </TabsContent>
+   449→                      <TabsContent value="table">
+   450→                        <div className="max-h-72 overflow-auto rounded-lg border">
+   451→                          <table className="w-full text-xs">
+   452→                            <thead className="bg-muted/50 sticky top-0">
+   453→                              <tr>
+   454→                                <th className="p-2 text-left font-medium">Время</th>
+   455→                                <th className="p-2 text-right font-medium">CPU %</th>
+   456→                                <th className="p-2 text-right font-medium">Memory %</th>
+   457→                                <th className="p-2 text-right font-medium">Запросы</th>
+   458→                                <th className="p-2 text-right font-medium">Ошибки</th>
+   459→                                <th className="p-2 text-right font-medium">Latency</th>
+   460→                              </tr>
+   461→                            </thead>
+   462→                            <tbody>
+   463→                              {chartData.slice(0, 12).map((row, i) => (
+   464→                                <tr key={i} className="border-t hover:bg-muted/30">
+   465→                                  <td className="p-2 font-mono">{row.time}</td>
+   466→                                  <td className="p-2 text-right font-mono">
+   467→                                    <span className={row.cpu > 70 ? "text-red-500" : row.cpu > 50 ? "text-amber-500" : ""}>
+   468→                                      {row.cpu.toFixed(1)}
+   469→                                    </span>
+   470→                                  </td>
+   471→                                  <td className="p-2 text-right font-mono">
+   472→                                    <span className={row.memory > 80 ? "text-red-500" : row.memory > 60 ? "text-amber-500" : ""}>
+   473→                                      {row.memory.toFixed(1)}
+   474→                                    </span>
+   475→                                  </td>
+   476→                                  <td className="p-2 text-right font-mono">{row.requests}</td>
+   477→                                  <td className="p-2 text-right font-mono">
+   478→                                    <span className={row.errors > 10 ? "text-red-500" : row.errors > 5 ? "text-amber-500" : ""}>
+   479→                                      {row.errors}
+   480→                                    </span>
+   481→                                  </td>
+   482→                                  <td className="p-2 text-right font-mono">{row.latency}ms</td>
+   483→                                </tr>
+   484→                              ))}
+   485→                            </tbody>
+   486→                          </table>
+   487→                        </div>
+   488→                      </TabsContent>
+   489→                      <TabsContent value="json">
+   490→                        <div className="relative">
+   491→                          <Button
+   492→                            variant="ghost"
+   493→                            size="icon"
+   494→                            className="absolute top-2 right-2 h-7 w-7"
+   495→                            onClick={() => handleCopy(JSON.stringify(result, null, 2))}
+   496→                          >
+   497→                            {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+   498→                          </Button>
+   499→                          <pre className="bg-muted/50 rounded-lg p-4 text-xs font-mono overflow-auto max-h-72">
+   500→                            {JSON.stringify(result, null, 2)}
+   501→                          </pre>
+   502→                        </div>
+   503→                      </TabsContent>
+   504→                    </Tabs>
+   505→                  )}
+   506→                </CardContent>
+   507→              </Card>
+   508→            )}
+   509→          </div>
+   510→
+   511→          {/* Sidebar - History & Saved & Info */}
+   512→          <div className="space-y-4">
+   513→            {/* Saved queries */}
+   514→            {savedQueries.length > 0 && (
+   515→              <Card>
+   516→                <CardHeader className="pb-3">
+   517→                  <CardTitle className="text-base flex items-center gap-2">
+   518→                    <Save className="h-4 w-4 text-amber-500" />
+   519→                    Сохранённые
+   520→                  </CardTitle>
+   521→                </CardHeader>
+   522→                <CardContent>
+   523→                  <div className="space-y-2 max-h-40 overflow-y-auto">
+   524→                    {savedQueries.map((sq) => (
+   525→                      <div key={sq.id} className="flex items-center gap-2">
+   526→                        <button
+   527→                          onClick={() => { setQuery(sq.query); setSelectedDs(sq.dataSourceId); }}
+   528→                          className="flex-1 text-left p-2 rounded-lg bg-muted/50 hover:bg-muted text-xs truncate cursor-pointer transition-colors"
+   529→                        >
+   530→                          <span className="font-medium">{sq.name}</span>
+   531→                          <span className="text-muted-foreground ml-1 font-mono text-[10px]">({sq.query.slice(0, 20)}...)</span>
+   532→                        </button>
+   533→                        <Button
+   534→                          variant="ghost"
+   535→                          size="icon"
+   536→                          className="h-6 w-6 shrink-0 text-muted-foreground"
+   537→                          onClick={() => handleDeleteSaved(sq.id)}
+   538→                        >
+   539→                          <Trash2 className="h-3 w-3" />
+   540→                        </Button>
+   541→                      </div>
+   542→                    ))}
+   543→                  </div>
+   544→                </CardContent>
+   545→              </Card>
+   546→            )}
+   547→
+   548→            {/* Query history */}
+   549→            <Card>
+   550→              <CardHeader className="pb-3">
+   551→                <CardTitle className="text-base flex items-center gap-2">
+   552→                  <History className="h-4 w-4 text-amber-500" />
+   553→                  История запросов
+   554→                </CardTitle>
+   555→              </CardHeader>
+   556→              <CardContent>
+   557→                {history.length > 0 ? (
+   558→                  <div className="space-y-2 max-h-48 overflow-y-auto">
+   559→                    {history.map((q, i) => (
+   560→                      <button
+   561→                        key={i}
+   562→                        onClick={() => setQuery(q)}
+   563→                        className="w-full text-left p-2 rounded-lg bg-muted/50 hover:bg-muted text-xs font-mono truncate cursor-pointer transition-colors"
+   564→                      >
+   565→                        {q}
+   566→                      </button>
+   567→                    ))}
+   568→                  </div>
+   569→                ) : (
+   570→                  <p className="text-xs text-muted-foreground text-center py-4">
+   571→                    Запросы пока не выполнялись
+   572→                  </p>
+   573→                )}
+   574→              </CardContent>
+   575→            </Card>
+   576→
+   577→            {/* Plugin endpoints reference */}
+   578→            <Card>
+   579→              <CardHeader className="pb-3">
+   580→                <CardTitle className="text-base flex items-center gap-2">
+   581→                  <Code2 className="h-4 w-4 text-amber-500" />
+   582→                  API плагинов
+   583→                </CardTitle>
+   584→              </CardHeader>
+   585→              <CardContent className="space-y-2">
+   586→                {[
+   587→                  { method: "GET", path: "/well-known", desc: "Метаданные" },
+   588→                  { method: "POST", path: "/datasource/health-check", desc: "Проверка связи" },
+   589→                  { method: "POST", path: "/datasource/constructor-fields", desc: "Поля конфигурации" },
+   590→                  { method: "POST", path: "/query/constructor-fields", desc: "Поля запроса" },
+   591→                  { method: "POST", path: "/query/get-result", desc: "Выполнение запроса" },
+   592→                  { method: "POST", path: "/variable/values", desc: "Значения переменных" },
+   593→                ].map((ep) => (
+   594→                  <div key={ep.path} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 text-xs">
+   595→                    <Badge
+   596→                      variant="outline"
+   597→                      className={`text-[8px] px-1 font-mono ${
+   598→                        ep.method === "GET"
+   599→                          ? "text-emerald-600 border-emerald-500/30"
+   600→                          : "text-blue-600 border-blue-500/30"
+   601→                      }`}
+   602→                    >
+   603→                      {ep.method}
+   604→                    </Badge>
+   605→                    <code className="font-mono flex-1 truncate">{ep.path}</code>
+   606→                    <span className="text-muted-foreground shrink-0">{ep.desc}</span>
+   607→                  </div>
+   608→                ))}
+   609→              </CardContent>
+   610→            </Card>
+   611→
+   612→            {/* Query execution format */}
+   613→            <Card>
+   614→              <CardHeader className="pb-3">
+   615→                <CardTitle className="text-base flex items-center gap-2">
+   616→                  <Code2 className="h-4 w-4 text-amber-500" />
+   617→                  Формат запроса
+   618→                </CardTitle>
+   619→              </CardHeader>
+   620→              <CardContent>
+   621→                <pre className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono overflow-auto">
+   622→{`POST /api/v1/query
+   623→{
+   624→  "dataSourceId": "string",
+   625→  "queries": [{
+   626→    "refID": "A",
+   627→    "maxDataPoints": 100,
+   628→    "timeRange": {
+   629→      "from": 1718000000,
+   630→      "to": 1718003600
+   631→    },
+   632→    "json": "query string"
+   633→  }],
+   634→  "variables": {}
+   635→}`}
+   636→                </pre>
+   637→              </CardContent>
+   638→            </Card>
+   639→          </div>
+   640→        </div>
+   641→      )}
+   642→
+   643→      {/* Save Query Dialog */}
+   644→      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+   645→        <DialogContent className="sm:max-w-sm">
+   646→          <DialogHeader>
+   647→            <DialogTitle>Сохранить запрос</DialogTitle>
+   648→          </DialogHeader>
+   649→          <div className="py-4">
+   650→            <Input
+   651→              placeholder="Название запроса"
+   652→              value={saveName}
+   653→              onChange={(e) => setSaveName(e.target.value)}
+   654→              onKeyDown={(e) => e.key === "Enter" && handleSaveQuery()}
+   655→            />
+   656→          </div>
+   657→          <DialogFooter>
+   658→            <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
+   659→              Отмена
+   660→            </Button>
+   661→            <Button
+   662→              onClick={handleSaveQuery}
+   663→              disabled={!saveName.trim()}
+   664→              className="bg-amber-500 hover:bg-amber-600 text-white"
+   665→            >
+   666→              Сохранить
+   667→            </Button>
+   668→          </DialogFooter>
+   669→        </DialogContent>
+   670→      </Dialog>
+   671→    </div>
+   672→  );
+   673→}
+   674→

@@ -1,0 +1,946 @@
+     1→"use client";
+     2→
+     3→import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+     4→import { useGraphinyaStore } from "@/lib/store";
+     5→import { useGraphinyaApi } from "@/hooks/use-grafinya-api";
+     6→import type { Dashboard, Widget } from "@/lib/grafinya-api";
+     7→import { DEMO_DASHBOARDS, generateTimeSeriesData, generatePieData, generateTableData } from "@/lib/demo-data";
+     8→import { Button } from "@/components/ui/button";
+     9→import { Input } from "@/components/ui/input";
+    10→import { Label } from "@/components/ui/label";
+    11→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+    12→import { Badge } from "@/components/ui/badge";
+    13→import { Skeleton } from "@/components/ui/skeleton";
+    14→import {
+    15→  Select,
+    16→  SelectContent,
+    17→  SelectItem,
+    18→  SelectTrigger,
+    19→  SelectValue,
+    20→} from "@/components/ui/select";
+    21→import {
+    22→  Dialog,
+    23→  DialogContent,
+    24→  DialogFooter,
+    25→  DialogHeader,
+    26→  DialogTitle,
+    27→} from "@/components/ui/dialog";
+    28→import {
+    29→  ArrowLeft,
+    30→  LayoutDashboard,
+    31→  RefreshCw,
+    32→  Loader2,
+    33→  BarChart3,
+    34→  Table2,
+    35→  Clock,
+    36→  Maximize2,
+    37→  Minimize2,
+    38→  TrendingUp,
+    39→  Activity,
+    40→  Database,
+    41→  Zap,
+    42→  Plus,
+    43→  Trash2,
+    44→  Edit3,
+    45→  Star,
+    46→  Settings2,
+    47→  X,
+    48→  Save,
+    49→} from "lucide-react";
+    50→import {
+    51→  LineChart,
+    52→  Line,
+    53→  BarChart,
+    54→  Bar,
+    55→  XAxis,
+    56→  YAxis,
+    57→  CartesianGrid,
+    58→  Tooltip,
+    59→  ResponsiveContainer,
+    60→  PieChart,
+    61→  Pie,
+    62→  Cell,
+    63→  Area,
+    64→  AreaChart,
+    65→  Legend,
+    66→} from "recharts";
+    67→import { useToast } from "@/hooks/use-toast";
+    68→
+    69→const CHART_COLORS = [
+    70→  "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#8b5cf6",
+    71→  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
+    72→];
+    73→
+    74→const WIDGET_TYPES = [
+    75→  { value: "line", label: "Линейный график", icon: <TrendingUp className="h-4 w-4" /> },
+    76→  { value: "bar", label: "Столбчатая диаграмма", icon: <BarChart3 className="h-4 w-4" /> },
+    77→  { value: "pie", label: "Круговая диаграмма", icon: <Activity className="h-4 w-4" /> },
+    78→  { value: "table", label: "Таблица", icon: <Table2 className="h-4 w-4" /> },
+    79→];
+    80→
+    81→const WIDGET_ICONS: Record<string, React.ReactNode> = {
+    82→  line: <TrendingUp className="h-3.5 w-3.5" />,
+    83→  bar: <BarChart3 className="h-3.5 w-3.5" />,
+    84→  pie: <Activity className="h-3.5 w-3.5" />,
+    85→  table: <Table2 className="h-3.5 w-3.5" />,
+    86→};
+    87→
+    88→export function DashboardDetailView() {
+    89→  const {
+    90→    selectedDashboardId,
+    91→    setCurrentView,
+    92→    setSelectedDashboardId,
+    93→    connectionStatus,
+    94→    timeRange,
+    95→    setTimeRange,
+    96→    isDemoMode,
+    97→    dashboards,
+    98→    dataSources,
+    99→    toggleDashboardFavorite,
+   100→    addWidgetToDashboard,
+   101→    updateWidgetInDashboard,
+   102→    removeWidgetFromDashboard,
+   103→    updateVariableInDashboard,
+   104→  } = useGraphinyaStore();
+   105→  const { call } = useGraphinyaApi();
+   106→  const { toast } = useToast();
+   107→  const [dashboard, setDashboard] = useState<Dashboard | null>(null);
+   108→  const [loading, setLoading] = useState(true);
+   109→  const [refreshing, setRefreshing] = useState(false);
+   110→  const [fullscreenWidget, setFullscreenWidget] = useState<Widget | null>(null);
+   111→  const [showWidgetEditor, setShowWidgetEditor] = useState(false);
+   112→  const [editingWidget, setEditingWidget] = useState<Widget | null>(null);
+   113→  const [isEditingDashboard, setIsEditingDashboard] = useState(false);
+   114→  const [editTitle, setEditTitle] = useState("");
+   115→  const [editDesc, setEditDesc] = useState("");
+   116→  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+   117→  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+   118→
+   119→  // Generate chart data based on time range
+   120→  const chartData = useMemo(() => {
+   121→    const pointsMap: Record<string, number> = { "15m": 15, "1h": 24, "6h": 36, "24h": 48, "7d": 56, "30d": 60 };
+   122→    return generateTimeSeriesData(pointsMap[timeRange] || 24);
+   123→  }, [timeRange]);
+   124→
+   125→  const pieData = useMemo(() => generatePieData(), []);
+   126→  const tableData = useMemo(() => generateTableData(), []);
+   127→
+   128→  const fetchDashboard = useCallback(async () => {
+   129→    if (!selectedDashboardId) return;
+   130→    setLoading(true);
+   131→    try {
+   132→      if (connectionStatus === "demo") {
+   133→        const found = DEMO_DASHBOARDS.find((d) => d._id === selectedDashboardId);
+   134→        // Also check the live store dashboards for user-created ones
+   135→        const fromStore = dashboards.find((d) => d._id === selectedDashboardId);
+   136→        setDashboard(fromStore || found || null);
+   137→      } else if (connectionStatus === "connected") {
+   138→        const data = await call<Dashboard>({
+   139→          path: `/dashboards/${selectedDashboardId}`,
+   140→        });
+   141→        setDashboard(data);
+   142→      }
+   143→    } catch (err) {
+   144→      console.error("Failed to fetch dashboard:", err);
+   145→    } finally {
+   146→      setLoading(false);
+   147→    }
+   148→  }, [selectedDashboardId, connectionStatus, call, dashboards]);
+   149→
+   150→  useEffect(() => {
+   151→    fetchDashboard();
+   152→  }, [fetchDashboard]);
+   153→
+   154→  // Re-sync dashboard when store dashboards change
+   155→  useEffect(() => {
+   156→    if (selectedDashboardId) {
+   157→      const updated = dashboards.find((d) => d._id === selectedDashboardId);
+   158→      if (updated && connectionStatus === "demo") {
+   159→        setDashboard(updated);
+   160→      }
+   161→    }
+   162→  }, [dashboards, selectedDashboardId, connectionStatus]);
+   163→
+   164→  // Auto-refresh
+   165→  useEffect(() => {
+   166→    if (refreshIntervalRef.current) {
+   167→      clearInterval(refreshIntervalRef.current);
+   168→    }
+   169→    if (dashboard?.refreshTime && dashboard.refreshTime > 0 && (connectionStatus === "connected" || connectionStatus === "demo")) {
+   170→      refreshIntervalRef.current = setInterval(() => {
+   171→        setLastRefresh(new Date());
+   172→        if (connectionStatus === "demo") {
+   173→          // Re-generate demo data by re-rendering
+   174→          setDashboard((prev) => prev ? { ...prev } : null);
+   175→        }
+   176→      }, dashboard.refreshTime);
+   177→    }
+   178→    return () => {
+   179→      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
+   180→    };
+   181→  }, [dashboard?.refreshTime, connectionStatus]);
+   182→
+   183→  const handleRefresh = async () => {
+   184→    setRefreshing(true);
+   185→    setLastRefresh(new Date());
+   186→    if (connectionStatus !== "demo") {
+   187→      await fetchDashboard();
+   188→    } else {
+   189→      setDashboard((prev) => prev ? { ...prev } : null);
+   190→    }
+   191→    setRefreshing(false);
+   192→    toast({ title: "Дашборд обновлён", description: "Данные обновлены успешно" });
+   193→  };
+   194→
+   195→  const handleBack = () => {
+   196→    setSelectedDashboardId(null);
+   197→    setCurrentView("dashboards");
+   198→  };
+   199→
+   200→  const handleToggleFavorite = () => {
+   201→    if (dashboard) {
+   202→      toggleDashboardFavorite(dashboard._id);
+   203→      setDashboard((prev) => prev ? { ...prev, isFavorite: !prev.isFavorite } : null);
+   204→      toast({
+   205→        title: dashboard.isFavorite ? "Убрано из избранного" : "Добавлено в избранное",
+   206→        description: dashboard.title,
+   207→      });
+   208→    }
+   209→  };
+   210→
+   211→  const handleSaveDashboardInfo = async () => {
+   212→    if (!dashboard) return;
+   213→    if (connectionStatus === "demo") {
+   214→      const store = useGraphinyaStore.getState();
+   215→      store.updateDashboard(dashboard._id, { title: editTitle, description: editDesc });
+   216→      setDashboard((prev) => prev ? { ...prev, title: editTitle, description: editDesc } : null);
+   217→    } else {
+   218→      try {
+   219→        await call({
+   220→          path: `/dashboards/${dashboard._id}`,
+   221→          method: "PUT",
+   222→          body: { title: editTitle, description: editDesc },
+   223→        });
+   224→        setDashboard((prev) => prev ? { ...prev, title: editTitle, description: editDesc } : null);
+   225→      } catch (err) {
+   226→        toast({ title: "Ошибка сохранения", description: "Не удалось обновить дашборд", variant: "destructive" });
+   227→      }
+   228→    }
+   229→    setIsEditingDashboard(false);
+   230→    toast({ title: "Дашборд обновлён", description: editTitle });
+   231→  };
+   232→
+   233→  const handleVariableChange = (varName: string, newValue: string) => {
+   234→    if (!dashboard) return;
+   235→    if (connectionStatus === "demo") {
+   236→      updateVariableInDashboard(dashboard._id, varName, newValue);
+   237→    }
+   238→    setDashboard((prev) =>
+   239→      prev
+   240→        ? {
+   241→            ...prev,
+   242→            variables: prev.variables?.map((v) =>
+   243→              v.name === varName ? { ...v, current: newValue } : v
+   244→            ),
+   245→          }
+   246→        : null
+   247→    );
+   248→  };
+   249→
+   250→  const handleAddWidget = () => {
+   251→    setEditingWidget(null);
+   252→    setShowWidgetEditor(true);
+   253→  };
+   254→
+   255→  const handleEditWidget = (widget: Widget) => {
+   256→    setEditingWidget(widget);
+   257→    setShowWidgetEditor(true);
+   258→  };
+   259→
+   260→  const handleDeleteWidget = (widgetId: string) => {
+   261→    if (!dashboard) return;
+   262→    if (connectionStatus === "demo") {
+   263→      removeWidgetFromDashboard(dashboard._id, widgetId);
+   264→    }
+   265→    setDashboard((prev) =>
+   266→      prev
+   267→        ? { ...prev, widgets: prev.widgets?.filter((w) => w.id !== widgetId) }
+   268→        : null
+   269→    );
+   270→    toast({ title: "Виджет удалён", description: "Виджет был удалён из дашборда" });
+   271→  };
+   272→
+   273→  const handleWidgetSaved = (widget: Widget) => {
+   274→    if (!dashboard) return;
+   275→    if (editingWidget) {
+   276→      // Update existing
+   277→      if (connectionStatus === "demo") {
+   278→        updateWidgetInDashboard(dashboard._id, widget.id, widget);
+   279→      }
+   280→      setDashboard((prev) =>
+   281→        prev
+   282→          ? { ...prev, widgets: prev.widgets?.map((w) => (w.id === widget.id ? widget : w)) }
+   283→          : null
+   284→      );
+   285→      toast({ title: "Виджет обновлён", description: widget.title });
+   286→    } else {
+   287→      // Add new
+   288→      if (connectionStatus === "demo") {
+   289→        addWidgetToDashboard(dashboard._id, widget);
+   290→      }
+   291→      setDashboard((prev) =>
+   292→        prev ? { ...prev, widgets: [...(prev.widgets || []), widget] } : null
+   293→      );
+   294→      toast({ title: "Виджет добавлен", description: widget.title });
+   295→    }
+   296→    setShowWidgetEditor(false);
+   297→    setEditingWidget(null);
+   298→  };
+   299→
+   300→  if (loading) {
+   301→    return (
+   302→      <div className="space-y-4">
+   303→        <Skeleton className="h-10 w-64" />
+   304→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+   305→          {[1, 2, 3].map((i) => (
+   306→            <Skeleton key={i} className="h-48 rounded-xl" />
+   307→          ))}
+   308→        </div>
+   309→      </div>
+   310→    );
+   311→  }
+   312→
+   313→  if (!dashboard) {
+   314→    return (
+   315→      <div className="flex flex-col items-center justify-center py-20 text-center">
+   316→        <LayoutDashboard className="h-12 w-12 text-muted-foreground/30 mb-4" />
+   317→        <h3 className="text-lg font-semibold">Дашборд не найден</h3>
+   318→        <Button onClick={handleBack} variant="outline" className="mt-4">
+   319→          <ArrowLeft className="h-4 w-4 mr-2" />
+   320→          Назад к списку
+   321→        </Button>
+   322→      </div>
+   323→    );
+   324→  }
+   325→
+   326→  const widgets = dashboard.widgets || [];
+   327→  const isConnected = connectionStatus === "connected" || connectionStatus === "demo";
+   328→
+   329→  // Stat cards for dashboard overview
+   330→  const statCards = [
+   331→    { label: "Виджетов", value: widgets.length, icon: <BarChart3 className="h-4 w-4" />, color: "text-amber-500" },
+   332→    { label: "Источников", value: new Set(widgets.map(w => w.dataSourceId).filter(Boolean)).size, icon: <Database className="h-4 w-4" />, color: "text-emerald-500" },
+   333→    { label: "Обновление", value: dashboard.refreshTime ? `${(dashboard.refreshTime / 1000).toFixed(0)}с` : "—", icon: <Clock className="h-4 w-4" />, color: "text-blue-500" },
+   334→    { label: "Переменных", value: dashboard.variables?.length || 0, icon: <Zap className="h-4 w-4" />, color: "text-violet-500" },
+   335→  ];
+   336→
+   337→  return (
+   338→    <div className="space-y-6">
+   339→      {/* Header */}
+   340→      <div className="flex items-center justify-between flex-wrap gap-3">
+   341→        <div className="flex items-center gap-3">
+   342→          <Button variant="ghost" size="icon" onClick={handleBack} className="shrink-0">
+   343→            <ArrowLeft className="h-5 w-5" />
+   344→          </Button>
+   345→          {isEditingDashboard ? (
+   346→            <div className="flex items-center gap-2">
+   347→              <Input
+   348→                value={editTitle}
+   349→                onChange={(e) => setEditTitle(e.target.value)}
+   350→                className="text-lg font-bold h-9 w-64"
+   351→                placeholder="Название дашборда"
+   352→              />
+   353→              <Button size="icon" onClick={handleSaveDashboardInfo} className="h-9 w-9 bg-amber-500 hover:bg-amber-600 text-white">
+   354→                <Save className="h-4 w-4" />
+   355→              </Button>
+   356→              <Button size="icon" variant="ghost" onClick={() => setIsEditingDashboard(false)} className="h-9 w-9">
+   357→                <X className="h-4 w-4" />
+   358→              </Button>
+   359→            </div>
+   360→          ) : (
+   361→            <div>
+   362→              <div className="flex items-center gap-2">
+   363→                <h2 className="text-2xl font-bold tracking-tight">
+   364→                  {dashboard.title}
+   365→                </h2>
+   366→                <Button
+   367→                  variant="ghost"
+   368→                  size="icon"
+   369→                  className="h-8 w-8"
+   370→                  onClick={handleToggleFavorite}
+   371→                >
+   372→                  <Star
+   373→                    className={`h-4 w-4 ${
+   374→                      dashboard.isFavorite
+   375→                        ? "text-amber-500 fill-amber-500"
+   376→                        : "text-muted-foreground"
+   377→                    }`}
+   378→                  />
+   379→                </Button>
+   380→              </div>
+   381→              {dashboard.description && (
+   382→                <p className="text-muted-foreground text-sm mt-0.5">
+   383→                  {dashboard.description}
+   384→                </p>
+   385→              )}
+   386→            </div>
+   387→          )}
+   388→        </div>
+   389→        <div className="flex items-center gap-2">
+   390→          {isConnected && (
+   391→            <Button
+   392→              variant="ghost"
+   393→              size="icon"
+   394→              className="h-8 w-8"
+   395→              onClick={() => {
+   396→                setEditTitle(dashboard.title);
+   397→                setEditDesc(dashboard.description || "");
+   398→                setIsEditingDashboard(true);
+   399→              }}
+   400→            >
+   401→              <Settings2 className="h-4 w-4" />
+   402→            </Button>
+   403→          )}
+   404→          {/* Time range picker */}
+   405→          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
+   406→            <SelectTrigger className="w-[100px] h-8 text-xs">
+   407→              <Clock className="h-3 w-3 mr-1" />
+   408→              <SelectValue />
+   409→            </SelectTrigger>
+   410→            <SelectContent>
+   411→              <SelectItem value="15m">15 мин</SelectItem>
+   412→              <SelectItem value="1h">1 час</SelectItem>
+   413→              <SelectItem value="6h">6 часов</SelectItem>
+   414→              <SelectItem value="24h">24 часа</SelectItem>
+   415→              <SelectItem value="7d">7 дней</SelectItem>
+   416→              <SelectItem value="30d">30 дней</SelectItem>
+   417→            </SelectContent>
+   418→          </Select>
+   419→          <Button
+   420→            variant="outline"
+   421→            size="sm"
+   422→            onClick={handleRefresh}
+   423→            disabled={refreshing}
+   424→          >
+   425→            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+   426→            Обновить
+   427→          </Button>
+   428→          {isConnected && (
+   429→            <Button
+   430→              size="sm"
+   431→              onClick={handleAddWidget}
+   432→              className="bg-amber-500 hover:bg-amber-600 text-white"
+   433→            >
+   434→              <Plus className="h-4 w-4 mr-2" />
+   435→              Виджет
+   436→            </Button>
+   437→          )}
+   438→        </div>
+   439→      </div>
+   440→
+   441→      {/* Last refresh time */}
+   442→      <p className="text-xs text-muted-foreground">
+   443→        Последнее обновление: {lastRefresh.toLocaleTimeString("ru-RU")}
+   444→        {dashboard.refreshTime && dashboard.refreshTime > 0 && (
+   445→          <span className="ml-2 text-muted-foreground/60">
+   446→            (авто-обновление каждые {(dashboard.refreshTime / 1000).toFixed(0)}с)
+   447→          </span>
+   448→        )}
+   449→      </p>
+   450→
+   451→      {/* Stats row */}
+   452→      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+   453→        {statCards.map((stat) => (
+   454→          <div key={stat.label} className="flex items-center gap-3 p-3 rounded-xl border bg-card">
+   455→            <div className={`${stat.color}`}>
+   456→              {stat.icon}
+   457→            </div>
+   458→            <div>
+   459→              <p className="text-lg font-bold leading-none">{stat.value}</p>
+   460→              <p className="text-xs text-muted-foreground">{stat.label}</p>
+   461→            </div>
+   462→          </div>
+   463→        ))}
+   464→      </div>
+   465→
+   466→      {/* Variables - interactive selectors */}
+   467→      {dashboard.variables && dashboard.variables.length > 0 && (
+   468→        <div className="flex flex-wrap gap-3 p-4 bg-muted/50 rounded-xl items-center">
+   469→          <span className="text-sm font-medium text-muted-foreground">
+   470→            Переменные:
+   471→          </span>
+   472→          {dashboard.variables.map((v) => (
+   473→            <div key={v.name} className="flex items-center gap-2">
+   474→              <span className="text-xs font-medium text-muted-foreground">{v.name}:</span>
+   475→              {v.values && v.values.length > 0 ? (
+   476→                <Select
+   477→                  value={v.current || ""}
+   478→                  onValueChange={(val) => handleVariableChange(v.name, val)}
+   479→                >
+   480→                  <SelectTrigger className="h-7 text-xs w-auto min-w-[100px]">
+   481→                    <SelectValue />
+   482→                  </SelectTrigger>
+   483→                  <SelectContent>
+   484→                    {v.values.map((val) => (
+   485→                      <SelectItem key={val} value={val}>
+   486→                        {val}
+   487→                      </SelectItem>
+   488→                    ))}
+   489→                  </SelectContent>
+   490→                </Select>
+   491→              ) : (
+   492→                <Badge variant="secondary" className="text-xs">
+   493→                  {v.current || "(не выбрано)"}
+   494→                </Badge>
+   495→              )}
+   496→            </div>
+   497→          ))}
+   498→        </div>
+   499→      )}
+   500→
+   501→      {/* Tags */}
+   502→      {dashboard.tags && dashboard.tags.length > 0 && (
+   503→        <div className="flex flex-wrap gap-1.5">
+   504→          {dashboard.tags.map((tag) => (
+   505→            <Badge key={tag} variant="outline" className="text-xs">
+   506→              {tag}
+   507→            </Badge>
+   508→          ))}
+   509→        </div>
+   510→      )}
+   511→
+   512→      {/* Widgets grid */}
+   513→      {widgets.length > 0 ? (
+   514→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+   515→          {widgets.map((widget, idx) => {
+   516→            const isWide = (widget.cols || 1) >= 2;
+   517→            return (
+   518→              <Card key={widget.id || idx} className={`overflow-hidden group hover:shadow-md transition-all ${isWide ? "md:col-span-2" : ""}`}>
+   519→                <CardHeader className="pb-2">
+   520→                  <div className="flex items-center justify-between">
+   521→                    <CardTitle className="text-sm font-medium truncate flex items-center gap-2">
+   522→                      {WIDGET_ICONS[widget.type] || <BarChart3 className="h-3.5 w-3.5" />}
+   523→                      {widget.title || "Без названия"}
+   524→                    </CardTitle>
+   525→                    <div className="flex items-center gap-1">
+   526→                      <Badge variant="outline" className="text-[10px] px-1.5">
+   527→                        {widget.type || "chart"}
+   528→                      </Badge>
+   529→                      {isConnected && (
+   530→                        <>
+   531→                          <Button
+   532→                            variant="ghost"
+   533→                            size="icon"
+   534→                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+   535→                            onClick={() => handleEditWidget(widget)}
+   536→                          >
+   537→                            <Edit3 className="h-3 w-3" />
+   538→                          </Button>
+   539→                          <Button
+   540→                            variant="ghost"
+   541→                            size="icon"
+   542→                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
+   543→                            onClick={() => handleDeleteWidget(widget.id)}
+   544→                          >
+   545→                            <Trash2 className="h-3 w-3" />
+   546→                          </Button>
+   547→                        </>
+   548→                      )}
+   549→                      <Button
+   550→                        variant="ghost"
+   551→                        size="icon"
+   552→                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+   553→                        onClick={() => setFullscreenWidget(widget)}
+   554→                      >
+   555→                        <Maximize2 className="h-3 w-3" />
+   556→                      </Button>
+   557→                    </div>
+   558→                  </div>
+   559→                </CardHeader>
+   560→                <CardContent className="pt-0">
+   561→                  {widget.dataSourceId ? (
+   562→                    <div className="h-44">
+   563→                      {renderWidget(widget, idx, chartData, pieData, tableData)}
+   564→                    </div>
+   565→                  ) : (
+   566→                    <div className="h-44 flex flex-col items-center justify-center text-muted-foreground">
+   567→                      <Table2 className="h-8 w-8 mb-2 opacity-30" />
+   568→                      <p className="text-xs">Нет данных</p>
+   569→                    </div>
+   570→                  )}
+   571→                </CardContent>
+   572→              </Card>
+   573→            );
+   574→          })}
+   575→        </div>
+   576→      ) : (
+   577→        <div className="flex flex-col items-center justify-center py-16 text-center">
+   578→          <BarChart3 className="h-12 w-12 text-muted-foreground/30 mb-4" />
+   579→          <h3 className="text-lg font-semibold">Виджетов пока нет</h3>
+   580→          <p className="text-sm text-muted-foreground mt-1">
+   581→            Добавьте виджеты к дашборду для визуализации данных
+   582→          </p>
+   583→          {isConnected && (
+   584→            <Button
+   585→              onClick={handleAddWidget}
+   586→              className="mt-4 bg-amber-500 hover:bg-amber-600 text-white"
+   587→            >
+   588→              <Plus className="h-4 w-4 mr-2" />
+   589→              Добавить виджет
+   590→            </Button>
+   591→          )}
+   592→        </div>
+   593→      )}
+   594→
+   595→      {/* Widget Editor Dialog */}
+   596→      <WidgetEditorDialog
+   597→        open={showWidgetEditor}
+   598→        onOpenChange={setShowWidgetEditor}
+   599→        widget={editingWidget}
+   600→        dataSources={connectionStatus === "demo" ? [] : dataSources}
+   601→        onSave={handleWidgetSaved}
+   602→        isDemo={connectionStatus === "demo"}
+   603→      />
+   604→
+   605→      {/* Fullscreen Widget Modal */}
+   606→      {fullscreenWidget && (
+   607→        <Dialog open={!!fullscreenWidget} onOpenChange={() => setFullscreenWidget(null)}>
+   608→          <DialogContent className="max-w-4xl h-[80vh]">
+   609→            <DialogHeader>
+   610→              <DialogTitle className="flex items-center gap-2">
+   611→                {WIDGET_ICONS[fullscreenWidget.type] || <BarChart3 className="h-5 w-5" />}
+   612→                {fullscreenWidget.title || "Без названия"}
+   613→                <Badge variant="outline" className="text-xs">
+   614→                  {fullscreenWidget.type}
+   615→                </Badge>
+   616→              </DialogTitle>
+   617→            </DialogHeader>
+   618→            <div className="flex-1 h-full">
+   619→              {renderWidget(fullscreenWidget, widgets.indexOf(fullscreenWidget), chartData, pieData, tableData, true)}
+   620→            </div>
+   621→          </DialogContent>
+   622→        </Dialog>
+   623→      )}
+   624→    </div>
+   625→  );
+   626→}
+   627→
+   628→// ---- Widget Editor Dialog ----
+   629→function WidgetEditorDialog({
+   630→  open,
+   631→  onOpenChange,
+   632→  widget,
+   633→  dataSources,
+   634→  onSave,
+   635→  isDemo,
+   636→}: {
+   637→  open: boolean;
+   638→  onOpenChange: (open: boolean) => void;
+   639→  widget: Widget | null;
+   640→  dataSources: DataSource[];
+   641→  onSave: (widget: Widget) => void;
+   642→  isDemo: boolean;
+   643→}) {
+   644→  const [title, setTitle] = useState("");
+   645→  const [type, setType] = useState("line");
+   646→  const [cols, setCols] = useState(1);
+   647→  const [rows, setRows] = useState(2);
+   648→  const [dataSourceId, setDataSourceId] = useState("");
+   649→  const [query, setQuery] = useState("");
+   650→
+   651→  useEffect(() => {
+   652→    if (widget) {
+   653→      setTitle(widget.title || "");
+   654→      setType(widget.type || "line");
+   655→      setCols(widget.cols || 1);
+   656→      setRows(widget.rows || 2);
+   657→      setDataSourceId(widget.dataSourceId || "");
+   658→      setQuery(widget.query || "");
+   659→    } else {
+   660→      setTitle("");
+   661→      setType("line");
+   662→      setCols(1);
+   663→      setRows(2);
+   664→      setDataSourceId("");
+   665→      setQuery("");
+   666→    }
+   667→  }, [widget, open]);
+   668→
+   669→  const handleSave = () => {
+   670→    if (!title.trim()) return;
+   671→    const savedWidget: Widget = {
+   672→      id: widget?.id || `w-${Date.now()}`,
+   673→      title: title.trim(),
+   674→      type,
+   675→      cols,
+   676→      rows,
+   677→      dataSourceId: dataSourceId || undefined,
+   678→      query: query || undefined,
+   679→    };
+   680→    onSave(savedWidget);
+   681→  };
+   682→
+   683→  return (
+   684→    <Dialog open={open} onOpenChange={onOpenChange}>
+   685→      <DialogContent className="sm:max-w-lg">
+   686→        <DialogHeader>
+   687→          <DialogTitle className="flex items-center gap-2">
+   688→            <Edit3 className="h-5 w-5 text-amber-500" />
+   689→            {widget ? "Редактировать виджет" : "Новый виджет"}
+   690→          </DialogTitle>
+   691→        </DialogHeader>
+   692→        <div className="space-y-4 py-4">
+   693→          <div className="space-y-2">
+   694→            <Label>Название</Label>
+   695→            <Input
+   696→              placeholder="Название виджета"
+   697→              value={title}
+   698→              onChange={(e) => setTitle(e.target.value)}
+   699→            />
+   700→          </div>
+   701→          <div className="space-y-2">
+   702→            <Label>Тип визуализации</Label>
+   703→            <Select value={type} onValueChange={setType}>
+   704→              <SelectTrigger>
+   705→                <SelectValue />
+   706→              </SelectTrigger>
+   707→              <SelectContent>
+   708→                {WIDGET_TYPES.map((t) => (
+   709→                  <SelectItem key={t.value} value={t.value}>
+   710→                    <span className="flex items-center gap-2">
+   711→                      {t.icon}
+   712→                      {t.label}
+   713→                    </span>
+   714→                  </SelectItem>
+   715→                ))}
+   716→              </SelectContent>
+   717→            </Select>
+   718→          </div>
+   719→          <div className="grid grid-cols-2 gap-4">
+   720→            <div className="space-y-2">
+   721→              <Label>Ширина (колонки)</Label>
+   722→              <Select value={String(cols)} onValueChange={(v) => setCols(Number(v))}>
+   723→                <SelectTrigger>
+   724→                  <SelectValue />
+   725→                </SelectTrigger>
+   726→                <SelectContent>
+   727→                  <SelectItem value="1">1 колонка</SelectItem>
+   728→                  <SelectItem value="2">2 колонки</SelectItem>
+   729→                  <SelectItem value="3">3 колонки</SelectItem>
+   730→                </SelectContent>
+   731→              </Select>
+   732→            </div>
+   733→            <div className="space-y-2">
+   734→              <Label>Высота (ряды)</Label>
+   735→              <Select value={String(rows)} onValueChange={(v) => setRows(Number(v))}>
+   736→                <SelectTrigger>
+   737→                  <SelectValue />
+   738→                </SelectTrigger>
+   739→                <SelectContent>
+   740→                  <SelectItem value="1">1 ряд</SelectItem>
+   741→                  <SelectItem value="2">2 ряда</SelectItem>
+   742→                  <SelectItem value="3">3 ряда</SelectItem>
+   743→                </SelectContent>
+   744→              </Select>
+   745→            </div>
+   746→          </div>
+   747→          {!isDemo && dataSources.length > 0 && (
+   748→            <div className="space-y-2">
+   749→              <Label>Источник данных</Label>
+   750→              <Select value={dataSourceId} onValueChange={setDataSourceId}>
+   751→                <SelectTrigger>
+   752→                  <SelectValue placeholder="Выберите источник" />
+   753→                </SelectTrigger>
+   754→                <SelectContent>
+   755→                  {dataSources.map((ds) => (
+   756→                    <SelectItem key={ds._id} value={ds._id}>
+   757→                      {ds.name} ({ds.pluginId})
+   758→                    </SelectItem>
+   759→                  ))}
+   760→                </SelectContent>
+   761→              </Select>
+   762→            </div>
+   763→          )}
+   764→          {isDemo && (
+   765→            <div className="bg-violet-500/5 border border-violet-500/20 rounded-lg p-3 text-xs text-violet-600 dark:text-violet-400">
+   766→              В демо-режиме источник данных привязывается автоматически
+   767→            </div>
+   768→          )}
+   769→          <div className="space-y-2">
+   770→            <Label>Запрос</Label>
+   771→            <Input
+   772→              placeholder='metric="cpu_usage" или SQL запрос'
+   773→              value={query}
+   774→              onChange={(e) => setQuery(e.target.value)}
+   775→              className="font-mono text-sm"
+   776→            />
+   777→          </div>
+   778→        </div>
+   779→        <DialogFooter>
+   780→          <Button variant="outline" onClick={() => onOpenChange(false)}>
+   781→            Отмена
+   782→          </Button>
+   783→          <Button
+   784→            onClick={handleSave}
+   785→            disabled={!title.trim()}
+   786→            className="bg-amber-500 hover:bg-amber-600 text-white"
+   787→          >
+   788→            <Save className="h-4 w-4 mr-2" />
+   789→            {widget ? "Сохранить" : "Добавить"}
+   790→          </Button>
+   791→        </DialogFooter>
+   792→      </DialogContent>
+   793→    </Dialog>
+   794→  );
+   795→}
+   796→
+   797→// ---- Widget Renderers ----
+   798→function renderWidget(
+   799→  widget: { id: string; title: string; type: string; [key: string]: unknown },
+   800→  idx: number,
+   801→  chartData: ReturnType<typeof generateTimeSeriesData>,
+   802→  pieData: ReturnType<typeof generatePieData>,
+   803→  tableData: ReturnType<typeof generateTableData>,
+   804→  isFullscreen = false
+   805→) {
+   806→  const color = CHART_COLORS[idx % CHART_COLORS.length];
+   807→  const color2 = CHART_COLORS[(idx + 1) % CHART_COLORS.length];
+   808→  const color3 = CHART_COLORS[(idx + 2) % CHART_COLORS.length];
+   809→  const height = isFullscreen ? "100%" : "100%";
+   810→
+   811→  const tooltipStyle = {
+   812→    backgroundColor: "var(--popover)",
+   813→    border: "1px solid var(--border)",
+   814→    borderRadius: "8px",
+   815→    fontSize: "12px",
+   816→  };
+   817→
+   818→  switch (widget.type) {
+   819→    case "line":
+   820→      return (
+   821→        <ResponsiveContainer width="100%" height={height}>
+   822→          <AreaChart data={chartData}>
+   823→            <defs>
+   824→              <linearGradient id={`gradient-${idx}`} x1="0" y1="0" x2="0" y2="1">
+   825→                <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+   826→                <stop offset="95%" stopColor={color} stopOpacity={0} />
+   827→              </linearGradient>
+   828→              <linearGradient id={`gradient2-${idx}`} x1="0" y1="0" x2="0" y2="1">
+   829→                <stop offset="5%" stopColor={color2} stopOpacity={0.2} />
+   830→                <stop offset="95%" stopColor={color2} stopOpacity={0} />
+   831→              </linearGradient>
+   832→            </defs>
+   833→            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
+   834→            <XAxis dataKey="time" tick={{ fontSize: isFullscreen ? 11 : 9 }} stroke="var(--muted-foreground)" interval="preserveStartEnd" />
+   835→            <YAxis tick={{ fontSize: isFullscreen ? 11 : 9 }} stroke="var(--muted-foreground)" width={isFullscreen ? 50 : 35} />
+   836→            <Tooltip contentStyle={tooltipStyle} />
+   837→            {isFullscreen && <Legend />}
+   838→            <Area
+   839→              type="monotone"
+   840→              dataKey={idx % 3 === 0 ? "cpu" : idx % 3 === 1 ? "memory" : "requests"}
+   841→              stroke={color}
+   842→              fill={`url(#gradient-${idx})`}
+   843→              strokeWidth={2}
+   844→              name={widget.title}
+   845→            />
+   846→            <Area
+   847→              type="monotone"
+   848→              dataKey="latency"
+   849→              stroke={color2}
+   850→              fill={isFullscreen ? `url(#gradient2-${idx})` : "none"}
+   851→              strokeWidth={1.5}
+   852→              strokeDasharray="4 4"
+   853→              name="Latency"
+   854→            />
+   855→          </AreaChart>
+   856→        </ResponsiveContainer>
+   857→      );
+   858→
+   859→    case "bar":
+   860→      return (
+   861→        <ResponsiveContainer width="100%" height={height}>
+   862→          <BarChart data={chartData.slice(-8)}>
+   863→            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
+   864→            <XAxis dataKey="time" tick={{ fontSize: isFullscreen ? 11 : 9 }} stroke="var(--muted-foreground)" />
+   865→            <YAxis tick={{ fontSize: isFullscreen ? 11 : 9 }} stroke="var(--muted-foreground)" width={isFullscreen ? 50 : 35} />
+   866→            <Tooltip contentStyle={tooltipStyle} />
+   867→            {isFullscreen && <Legend />}
+   868→            <Bar
+   869→              dataKey={idx % 2 === 0 ? "disk_read" : "network_in"}
+   870→              fill={color}
+   871→              radius={[3, 3, 0, 0]}
+   872→              name={idx % 2 === 0 ? "Чтение" : "Входящий"}
+   873→            />
+   874→            <Bar
+   875→              dataKey={idx % 2 === 0 ? "disk_write" : "network_out"}
+   876→              fill={color2}
+   877→              radius={[3, 3, 0, 0]}
+   878→              name={idx % 2 === 0 ? "Запись" : "Исходящий"}
+   879→            />
+   880→          </BarChart>
+   881→        </ResponsiveContainer>
+   882→      );
+   883→
+   884→    case "pie":
+   885→      return (
+   886→        <ResponsiveContainer width="100%" height={height}>
+   887→          <PieChart>
+   888→            <Pie
+   889→              data={pieData}
+   890→              dataKey="value"
+   891→              nameKey="name"
+   892→              cx="50%"
+   893→              cy="50%"
+   894→              outerRadius={isFullscreen ? 150 : 55}
+   895→              innerRadius={isFullscreen ? 90 : 30}
+   896→              paddingAngle={2}
+   897→              label={isFullscreen}
+   898→            >
+   899→              {pieData.map((entry, index) => (
+   900→                <Cell key={`cell-${index}`} fill={entry.color} />
+   901→              ))}
+   902→            </Pie>
+   903→            <Tooltip contentStyle={tooltipStyle} />
+   904→            {isFullscreen && <Legend />}
+   905→          </PieChart>
+   906→        </ResponsiveContainer>
+   907→      );
+   908→
+   909→    case "table":
+   910→    default:
+   911→      return (
+   912→        <div className="space-y-1.5 overflow-hidden h-full">
+   913→          <div className="grid grid-cols-4 gap-2 text-[10px] font-medium text-muted-foreground border-b pb-1.5">
+   914→            <span>Сервис</span>
+   915→            <span>Статус</span>
+   916→            <span className="text-right">Uptime</span>
+   917→            <span className="text-right">Latency</span>
+   918→          </div>
+   919→          <div className={`overflow-y-auto space-y-1 ${isFullscreen ? "max-h-[60vh]" : "max-h-32"}`}>
+   920→            {tableData.map((row) => (
+   921→              <div key={row.name} className="grid grid-cols-4 gap-2 text-[10px] py-1 border-b border-border/30 hover:bg-muted/30 rounded px-1">
+   922→                <span className="truncate font-medium">{row.name}</span>
+   923→                <span>
+   924→                  <Badge
+   925→                    variant="outline"
+   926→                    className={`text-[8px] px-1 py-0 ${
+   927→                      row.status === "healthy"
+   928→                        ? "border-emerald-500/30 text-emerald-600"
+   929→                        : row.status === "warning"
+   930→                        ? "border-amber-500/30 text-amber-600"
+   931→                        : "border-red-500/30 text-red-600"
+   932→                    }`}
+   933→                  >
+   934→                    {row.status === "healthy" ? "OK" : row.status === "warning" ? "WARN" : "CRIT"}
+   935→                  </Badge>
+   936→                </span>
+   937→                <span className="text-right font-mono">{row.uptime}</span>
+   938→                <span className="text-right font-mono">{row.latency}</span>
+   939→              </div>
+   940→            ))}
+   941→          </div>
+   942→        </div>
+   943→      );
+   944→  }
+   945→}
+   946→

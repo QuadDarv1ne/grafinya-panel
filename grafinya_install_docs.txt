@@ -1,0 +1,796 @@
+Установка | Система мониторинга Пульт
+Перейти к основному содержимому
+Пульт
+Графиня
+Реестр шаблонов
+Релизы
+Графиня 2026H1
+Графиня 2026H1
+Графиня 2025H2
+Графиня 2025H1
+⌘
+K
+Общие сведения
+Дистрибутивы
+Руководство пользователя
+Руководство администратора
+Установка
+Плагины
+Системные требования
+Разработка плагинов
+Разработка модулей
+Установка
+Версия: Графиня 2026H1
+Содержание этой страницы
+Установка
+Система "Графиня" разворачивается в Docker-контейнерах при помощи Docker Compose. В качестве СУБД используется MongoDB. Для скачивания docker-образов компонентов Графини необходимо воспользоваться учётной записью в 
+репозитории Лаборатории Числитель
+.
+После установки веб-интерфейс будет доступен по адресу 
+http://&lt;HOST&gt;
+ или 
+http://&lt;HOST&gt;:&lt;PORT&gt;
+, в зависимости от настроенного порта frontend.
+Данные для авторизации в веб-интерфейсе "Графини" по умолчанию:
+Логин: 
+admin
+ / Пароль: 
+123456
+На первом входе система запросит смену пароля.
+Предварительные требования
+​
+Установленные Docker и Docker Compose.
+Доступ к приватному реестру образов 
+registry.pult.chislitellab.ru:8124
+.
+Если используется модуль РСМ, также нужен доступ к реестру 
+registry.pult.chislitellab.ru:8126
+.
+Пользователь с правами на скачивание образов из указанных реестров.
+Шаг 1: Подготовка окружения
+​
+Для быстрой подготовки файлов можно воспользоваться 
+Конструктором развёртывания Графини
+. Он генерирует:
+docker-compose.yml
+.env_mongo
+.env_backend
+.env_frontend
+README.md
+ с краткой сводкой по выбранной конфигурации
+Ниже приведён расширенный пример для версии 
+2026H1 "Ассамблея"
+: кеширование включено, модуль РСМ включён, а в 
+docker-compose.yml
+ добавлены все плагины, поддерживаемые текущим конструктором установки.
+Создайте рабочую директорию для проекта:
+mkdir grafinya &amp;&amp; cd grafinya
+Создайте файл 
+docker-compose.yml
+ со следующим содержимым:
+services
+:
+mongo
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/database
+-
+app
+:
+2026H1
+env_file
+:
+ .env_mongo
+restart
+:
+ unless
+-
+stopped
+ports
+:
+-
+"27017:27017"
+volumes
+:
+-
+ mongo
+-
+data
+:
+/data/db
+networks
+:
+-
+ grafinya
+tarantool-cache
+:
+image
+:
+ tarantool/tarantool
+:
+2.11
+restart
+:
+ unless
+-
+stopped
+expose
+:
+-
+"3301"
+networks
+:
+-
+ grafinya
+backend
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/backend
+-
+app
+:
+2026H1
+restart
+:
+ unless
+-
+stopped
+healthcheck
+:
+test
+:
+[
+"CMD"
+,
+"node"
+,
+"-e"
+,
+"const url = new URL(process.env.HEALTHCHECK_URL || 'http://127.0.0.1:5000/healthz'); const client = url.protocol === 'https:' ? require('https') : require('http'); const req = client.get(url, (res) =&gt; process.exit(res.statusCode === 200 ? 0 : 1)); req.on('error', () =&gt; process.exit(1)); req.setTimeout(4000, () =&gt; { req.destroy(); process.exit(1); });"
+]
+interval
+:
+ 30s
+timeout
+:
+ 5s
+retries
+:
+3
+start_period
+:
+ 30s
+ports
+:
+-
+"5000:5000"
+env_file
+:
+ .env_backend
+environment
+:
+SECURITY_LOG_FILE_PATH
+:
+ $
+{
+SECURITY_LOG_FILE_PATH
+:
+-
+/app
+-
+data/security/security.log
+}
+volumes
+:
+-
+ security
+-
+log
+-
+data
+:
+/app
+-
+data/security
+depends_on
+:
+-
+ mongo
+-
+ tarantool
+-
+cache
+networks
+:
+-
+ grafinya
+cache-worker
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/backend
+-
+app
+:
+2026H1
+restart
+:
+ unless
+-
+stopped
+env_file
+:
+ .env_backend
+command
+:
+ npm run worker
+:
+cache
+healthcheck
+:
+test
+:
+[
+"CMD-SHELL"
+,
+"ps | grep -Eq '[c]acheWorker\\.(ts|js)'"
+]
+interval
+:
+ 30s
+timeout
+:
+ 5s
+retries
+:
+3
+start_period
+:
+ 30s
+depends_on
+:
+-
+ mongo
+-
+ tarantool
+-
+cache
+-
+ backend
+networks
+:
+-
+ grafinya
+frontend
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/frontend
+-
+app
+:
+2026H1
+restart
+:
+ unless
+-
+stopped
+env_file
+:
+ .env_frontend
+ports
+:
+-
+"80:80"
+networks
+:
+-
+ grafinya
+prometheus-plugin
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/plugins/prometheus
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+ports
+:
+-
+"8080:8080"
+networks
+:
+-
+ grafinya
+pult-plugin
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/plugins/pult
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+ports
+:
+-
+"8081:8080"
+networks
+:
+-
+ grafinya
+csv-plugin
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/plugins/csv
+-
+plugin
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+ports
+:
+-
+"8082:8080"
+networks
+:
+-
+ grafinya
+postgres-plugin
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/plugins/postgres
+-
+plugin
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+ports
+:
+-
+"8083:8080"
+networks
+:
+-
+ grafinya
+json-plugin
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/plugins/json
+-
+plugin
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+ports
+:
+-
+"8084:8080"
+networks
+:
+-
+ grafinya
+gitlab-plugin
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/plugins/gitlab
+-
+plugin
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+ports
+:
+-
+"8085:8080"
+networks
+:
+-
+ grafinya
+elasticsearch-plugin
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/plugins/elasticsearch
+-
+plugin
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+ports
+:
+-
+"8086:8080"
+networks
+:
+-
+ grafinya
+clickhouse-plugin
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8124/portal/plugins/clickhouse
+-
+plugin
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+ports
+:
+-
+"8087:8080"
+networks
+:
+-
+ grafinya
+rsm-module-api
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8126/portal/modules/rsm
+-
+module
+-
+api
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+environment
+:
+FRONTEND_HOST
+:
+"http://&lt;HOST_IP&gt;:8202"
+ports
+:
+-
+"8102:8080"
+networks
+:
+-
+ grafinya
+rsm-module-ui
+:
+image
+:
+ registry.pult.chislitellab.ru
+:
+8126/portal/modules/rsm
+-
+module
+-
+ui
+:
+1.3.0
+restart
+:
+ unless
+-
+stopped
+env_file
+:
+ .env_backend
+ports
+:
+-
+"8202:3000"
+networks
+:
+-
+ grafinya
+volumes
+:
+mongo-data
+:
+security-log-data
+:
+networks
+:
+grafinya
+:
+driver
+:
+ bridge
+warning
+Параметр 
+FRONTEND_HOST
+ у сервиса 
+rsm-module-api
+ должен указывать на внешний URL 
+rsm-module-ui
+, доступный из браузера пользователя. По умолчанию это 
+http://&lt;HOST_IP&gt;:8202
+, но при необходимости укажите другой домен или порт.
+Создайте необходимые 
+.env
+-файлы.
+a. 
+.env_mongo
+:
+MONGO_INITDB_ROOT_USERNAME=&lt;DB_LOGIN&gt;
+MONGO_INITDB_ROOT_PASSWORD=&lt;DB_PASSWORD&gt;
+MONGO_INITDB_DATABASE=grafinya
+warning
+Обязательно укажите свои 
+DB_LOGIN
+ и 
+DB_PASSWORD
+, иначе система не запустится корректно. Пример:
+MONGO_INITDB_ROOT_USERNAME=admin
+MONGO_INITDB_ROOT_PASSWORD=123456
+MONGO_INITDB_DATABASE=grafinya
+b. 
+.env_backend
+:
+# --- Подключение к MongoDB ---
+MONGO_URI=mongodb://&lt;DB_LOGIN&gt;:&lt;DB_PASSWORD&gt;@mongo:27017/grafinya?authSource=admin
+# --- Express / runtime ---
+PORT=5000
+# --- JWT ---
+JWT_SECRET=&lt;JWT_SECRET&gt;
+JWT_REFRESH_SECRET=&lt;JWT_REFRESH_SECRET&gt;
+EXPIRES_TOKEN=24h
+EXPIRES_REFRESH_TOKEN=7d
+# --- CORS / origins ---
+ALLOWED_ORIGIN=http://&lt;HOST&gt;
+# --- Безопасность / служебные ---
+INACTIVE_USER_DEACTIVATION_CHECK_INTERVAL_MINUTES=60
+ADMIN_MAX_CONCURRENT_SESSIONS=2
+SECURITY_LOG_FILE_PATH=/app-data/security/security.log
+INTERNAL_TOKEN=&lt;RANDOM_INTERNAL_TOKEN&gt;
+# --- Плагины и модули ---
+PLUGIN_PRESET=pult,prometheus,postgres,csv,json,gitlab,elasticsearch,clickhouse
+MODULE_PRESET=rsm
+# --- Кеширование ---
+FEATURE_DASHBOARD_CACHE=true
+INTERNAL_WARMUP_URL=http://backend:5000/internal/cache/warmup-dashboard
+CACHE_WORKER_INTERVAL_SEC=30
+CACHE_HARD_MAX_STALE_SEC=900
+TARANTOOL_CACHE_HOST=tarantool-cache
+TARANTOOL_CACHE_PORT=3301
+# --- RSM модуль ---
+RSM_MODULE_VERSION=1.3.0
+RSM_MODULE_API_BASE_URL=http://rsm-module-api:8080
+RSM_MODULE_FRONTEND_HOST=http://&lt;HOST_IP&gt;:8202
+RSM_MODULE_BUILD_TIMESTAMP=
+warning
+Обязательно замените:
+DB_LOGIN
+ и 
+DB_PASSWORD
+ на реальные учётные данные MongoDB
+JWT_SECRET
+, 
+JWT_REFRESH_SECRET
+ и 
+INTERNAL_TOKEN
+ на собственные безопасные значения
+ALLOWED_ORIGIN
+ на фактический адрес frontend
+RSM_MODULE_FRONTEND_HOST
+ на внешний адрес 
+rsm-module-ui
+Параметр 
+SECURITY_LOG_FILE_PATH
+ остаётся в 
+.env_backend
+, а в 
+docker-compose.yml
+ дополнительно прокидывается в контейнер backend с fallback-значением 
+/app-data/security/security.log
+. Для сохранения журнала между перезапусками используется volume 
+security-log-data
+.
+Если кеширование или модуль РСМ не нужны, конструктор автоматически уберёт соответствующие сервисы и связанные переменные.
+c. 
+.env_frontend
+:
+VITE_API_BASE_URL=http://&lt;HOST&gt;:5000/api/v1
+VITE_FEATURE_DASHBOARD_CACHE=true
+VITE_FEATURE_DASHBOARD_FORECAST=true
+NGINX_HOST=&lt;HOST&gt;
+NGINX_PORT=80
+warning
+Обязательно замените 
+VITE_API_BASE_URL
+ на адрес backend API, доступный из браузера пользователя. Пример:
+VITE_API_BASE_URL=http://192.168.0.1:5000/api/v1
+VITE_FEATURE_DASHBOARD_CACHE=true
+VITE_FEATURE_DASHBOARD_FORECAST=true
+NGINX_HOST=192.168.0.1
+NGINX_PORT=80
+Параметры 
+NGINX_HOST
+ и 
+NGINX_PORT
+ необязательны и используются только при необходимости явно настроить host и port для Nginx-контейнера.
+Параметры 
+VITE_FEATURE_DASHBOARD_CACHE
+ и 
+VITE_FEATURE_DASHBOARD_FORECAST
+ должны быть заданы явно как 
+true
+ или 
+false
+; пустое значение приведёт к некорректной генерации runtime-конфига frontend.
+Шаг 2: Плагины
+​
+Текущий конструктор установки поддерживает следующие плагины:
+prometheus-plugin
+ на порту 
+8080
+pult-plugin
+ на порту 
+8081
+csv-plugin
+ на порту 
+8082
+postgres-plugin
+ на порту 
+8083
+json-plugin
+ на порту 
+8084
+gitlab-plugin
+ на порту 
+8085
+elasticsearch-plugin
+ на порту 
+8086
+clickhouse-plugin
+ на порту 
+8087
+В примере выше эти плагины уже добавлены в 
+docker-compose.yml
+. Если нужен не полный набор, конструктор автоматически уберёт лишние сервисы и скорректирует переменную 
+PLUGIN_PRESET
+ в 
+.env_backend
+.
+Шаг 3: Аутентификация в Docker Registry
+​
+Для установки Графини и модуля РСМ выполните вход в приватные Docker-реестры:
+docker login registry.pult.chislitellab.ru:8124
+docker login registry.pult.chislitellab.ru:8126
+Введите свои учётные данные при запросе.
+Шаг 4: Запуск сервисов
+​
+Запустите сервисы с помощью Docker Compose:
+docker compose up -d
+Шаг 5: Проверка работы сервисов
+​
+После запуска проверьте, что контейнеры работают:
+docker compose ps
+Для конфигурации по умолчанию должны быть активны следующие сервисы:
+mongo
+tarantool-cache
+backend
+cache-worker
+frontend
+prometheus-plugin
+pult-plugin
+csv-plugin
+postgres-plugin
+json-plugin
+gitlab-plugin
+elasticsearch-plugin
+clickhouse-plugin
+rsm-module-api
+rsm-module-ui
+Важные замечания
+​
+Для production-окружения обязательно используйте собственные значения 
+JWT_SECRET
+, 
+JWT_REFRESH_SECRET
+ и 
+INTERNAL_TOKEN
+.
+Для ограничения доступа к API укажите корректный 
+ALLOWED_ORIGIN
+.
+Если вы не используете кеширование, отключите его через конструктор или вручную уберите 
+tarantool-cache
+, 
+cache-worker
+ и связанные переменные 
+FEATURE_DASHBOARD_CACHE
+, 
+INTERNAL_WARMUP_URL
+, 
+CACHE_WORKER_INTERVAL_SEC
+, 
+CACHE_HARD_MAX_STALE_SEC
+, 
+TARANTOOL_CACHE_HOST
+, 
+TARANTOOL_CACHE_PORT
+.
+Если вы не используете модуль РСМ, отключите его через конструктор или вручную удалите 
+rsm-module-api
+, 
+rsm-module-ui
+ и переменные 
+MODULE_PRESET
+, 
+RSM_MODULE_*
+.
+Предыдущая страница
+Статус системы
+Следующая страница
+Плагины
+Предварительные требования
+Шаг 1: Подготовка окружения
+Шаг 2: Плагины
+Шаг 3: Аутентификация в Docker Registry
+Шаг 4: Запуск сервисов
+Шаг 5: Проверка работы сервисов
+Важные замечания
+Copyright © 2023-2026
+ООО "Лаборатория Числитель"
