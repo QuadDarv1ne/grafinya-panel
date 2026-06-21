@@ -171,7 +171,7 @@ export function CommandPalette() {
   // Data source quick-access
   const dataSourceActions: CommandAction[] = dataSources.slice(0, 6).map((ds) => ({
     id: `ds-${ds._id}`,
-    label: ds.title,
+    label: ds.name,
     hint: ds.type?.toUpperCase(),
     icon: <Database className="h-4 w-4 text-blue-500" />,
     action: () => {
@@ -179,21 +179,21 @@ export function CommandPalette() {
       setOpen(false);
     },
     group: "Источники данных",
-    keywords: ds.title,
+    keywords: ds.name,
   }));
 
   // Plugin quick-access
   const pluginActions: CommandAction[] = plugins.slice(0, 8).map((p) => ({
-    id: `pl-${p._id || p.id}`,
-    label: p.title || p.name || p.id,
-    hint: p.type,
+    id: `pl-${p._id}`,
+    label: p.title || p.name,
+    hint: p.status,
     icon: <Plug className="h-4 w-4 text-emerald-500" />,
     action: () => {
       setCurrentView("plugins");
       setOpen(false);
     },
     group: "Плагины",
-    keywords: p.title || p.name || p.id,
+    keywords: p.title || p.name,
   }));
 
   // Quick actions

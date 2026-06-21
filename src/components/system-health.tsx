@@ -22,7 +22,6 @@ import {
   Zap,
   TrendingUp,
   TrendingDown,
-  MinutecircleIcon,
 } from "lucide-react";
 
 interface HealthMetric {

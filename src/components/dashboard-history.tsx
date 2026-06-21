@@ -39,7 +39,7 @@ export interface DashboardSnapshot {
   /** Snapshot of widget array at this point */
   widgets: Widget[];
   /** Snapshot of variables */
-  variables: Dashboard["variables"];
+  variables: NonNullable<Dashboard["variables"]>;
   /** Snapshot of title (in case user renames) */
   title: string;
   /** Was this snapshot created by user action or auto-saved? */
@@ -144,7 +144,7 @@ export function DashboardHistory({
       if (!dashboard) return;
       updateDashboard(dashboardId, {
         widgets: snapshot.widgets.map((w) => ({ ...w })),
-        variables: snapshot.variables.map((v) => ({ ...v })),
+        variables: (snapshot.variables ?? []).map((v) => ({ ...v })),
         title: snapshot.title,
       });
       onRestore(snapshot);

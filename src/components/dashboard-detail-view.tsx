@@ -20,7 +20,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useGraphinyaStore } from "@/lib/store";
 import { useGraphinyaApi } from "@/hooks/use-grafinya-api";
-import type { Dashboard, Widget } from "@/lib/grafinya-api";
+import type { Dashboard, Widget, DataSource } from "@/lib/grafinya-api";
 import { DEMO_DASHBOARDS, generateTimeSeriesData, generatePieData, generateTableData } from "@/lib/demo-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -416,7 +416,7 @@ export function DashboardDetailView() {
         ? {
             ...prev,
             widgets: snapshot.widgets.map((w) => ({ ...w })),
-            variables: snapshot.variables.map((v) => ({ ...v })),
+            variables: (snapshot.variables ?? []).map((v) => ({ ...v })),
             title: snapshot.title,
           }
         : null
@@ -424,7 +424,7 @@ export function DashboardDetailView() {
     prevSnapshotRef.current = JSON.stringify({
       t: snapshot.title,
       w: snapshot.widgets.map((w) => w.id),
-      v: snapshot.variables.map((v) => `${v.name}=${v.current}`),
+      v: (snapshot.variables ?? []).map((v) => `${v.name}=${v.current}`),
     });
   };
 
@@ -1020,7 +1020,7 @@ function WidgetEditorDialog({
 
 // ---- Widget Renderers ----
 function renderWidget(
-  widget: { id: string; title: string; type: string; [key: string]: unknown },
+  widget: Widget,
   idx: number,
   chartData: ReturnType<typeof generateTimeSeriesData>,
   pieData: ReturnType<typeof generatePieData>,

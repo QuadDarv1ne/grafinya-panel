@@ -402,14 +402,14 @@ export function ExplorerView() {
                         <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                       )}
                       Результат
-                      {result && (
+                      {result !== null && (
                         <Badge variant="secondary" className="text-xs ml-2">
                           200 OK
                         </Badge>
                       )}
                     </CardTitle>
                     {/* Chart type selector + palette + export */}
-                    {result && !error && (
+                    {result !== null && !error && (
                       <div className="flex gap-1 items-center flex-wrap">
                         <div className="flex gap-1">
                           {(["area", "line", "bar"] as const).map((ct) => (
@@ -488,7 +488,7 @@ export function ExplorerView() {
                     {/* Query metrics bar */}
                     <div className="flex items-center justify-between mb-3 pb-3 border-b">
                       <QueryMetricsBar metrics={metrics} isRunning={metricsRunning} />
-                      {result && (
+                      {result !== null && (
                         <Badge variant="secondary" className="text-xs">
                           200 OK
                         </Badge>

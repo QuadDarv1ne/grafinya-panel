@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useGraphinyaStore } from "@/lib/store";
+import { useGraphinyaApi } from "@/hooks/use-grafinya-api";
 import type { Dashboard, Widget } from "@/lib/grafinya-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -245,7 +246,8 @@ interface DashboardTemplatesProps {
 }
 
 export function DashboardTemplates({ open, onOpenChange }: DashboardTemplatesProps) {
-  const { dashboards, setDashboards, isDemoMode, call, setSelectedDashboardId, setCurrentView, logActivity, addRecentItem } = useGraphinyaStore();
+  const { dashboards, setDashboards, isDemoMode, setSelectedDashboardId, setCurrentView, logActivity, addRecentItem } = useGraphinyaStore();
+  const { call } = useGraphinyaApi();
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState<DashboardTemplate | null>(null);
   const [customTitle, setCustomTitle] = useState("");

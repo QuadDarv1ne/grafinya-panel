@@ -674,6 +674,6 @@ function generateDemoData(widget: Widget): unknown[] {
   if (widget.type === "table") {
     return generateTableData();
   }
-  return generateTimeSeriesData(12, widget.title);
+  return generateTimeSeriesData(12);
 }
 
