@@ -31,6 +31,8 @@ export type ConnectionStatus = "disconnected" | "connecting" | "connected" | "er
 
 export type TimeRange = "15m" | "1h" | "6h" | "24h" | "7d" | "30d";
 
+export type Language = "ru" | "en";
+
 // ---- Activity log entry ----
 export interface ActivityEntry {
   id: string;
@@ -79,6 +81,10 @@ interface GraphinyaState {
   activityLog: ActivityEntry[];
   recentItems: RecentItem[];
   onboardingCompleted: boolean;
+
+  // Language
+  language: Language;
+  setLanguage: (lang: Language) => void;
 
   // Actions - Connection
   setConfig: (config: GraphinyaConfig) => void;
@@ -151,6 +157,10 @@ export const useGraphinyaStore = create<GraphinyaState>()(
       activityLog: [],
       recentItems: [],
       onboardingCompleted: false,
+
+      // Language
+      language: "ru" as Language,
+      setLanguage: (lang) => set({ language: lang }),
 
       // Actions - Connection
       setConfig: (config) => set({ config }),
@@ -362,6 +372,7 @@ export const useGraphinyaStore = create<GraphinyaState>()(
         isDemoMode: state.isDemoMode,
         recentItems: state.recentItems,
         onboardingCompleted: state.onboardingCompleted,
+        language: state.language,
       }),
     }
   )
