@@ -2,12 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Clock,
   Database,
@@ -60,7 +55,7 @@ export function QueryMetricsBar({
   if (isRunning) {
     return (
       <Badge variant="outline" className={`text-xs ${className}`}>
-        <Activity className="h-3 w-3 mr-1 animate-pulse text-amber-500" />
+        <Activity className="mr-1 h-3 w-3 animate-pulse text-amber-500" />
         {compact ? "…" : "Выполняется…"}
       </Badge>
     );
@@ -72,8 +67,8 @@ export function QueryMetricsBar({
 
   if (metrics.error) {
     return (
-      <Badge variant="outline" className="text-xs border-red-500/30 text-red-600">
-        <AlertTriangle className="h-3 w-3 mr-1" />
+      <Badge variant="outline" className="border-red-500/30 text-xs text-red-600">
+        <AlertTriangle className="mr-1 h-3 w-3" />
         {compact ? "Ошибка" : "Ошибка запроса"}
       </Badge>
     );
@@ -86,34 +81,27 @@ export function QueryMetricsBar({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className={`flex items-center gap-1.5 flex-wrap ${className}`}>
+      <div className={`flex flex-wrap items-center gap-1.5 ${className}`}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge
-              variant="outline"
-              className={`text-xs cursor-help ${durationTone}`}
-            >
-              <Clock className="h-3 w-3 mr-1" />
+            <Badge variant="outline" className={`cursor-help text-xs ${durationTone}`}>
+              <Clock className="mr-1 h-3 w-3" />
               {duration}
             </Badge>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
             <div className="space-y-0.5">
               <div className="font-medium">Время выполнения</div>
-              <div className="text-muted-foreground">
-                {durationMs.toLocaleString("ru-RU")} мс
-              </div>
-              <div className="text-muted-foreground">
-                {cached ? "Из кэша" : "Прямой запрос"}
-              </div>
+              <div className="text-muted-foreground">{durationMs.toLocaleString("ru-RU")} мс</div>
+              <div className="text-muted-foreground">{cached ? "Из кэша" : "Прямой запрос"}</div>
             </div>
           </TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge variant="outline" className="text-xs cursor-help">
-              <Hash className="h-3 w-3 mr-1" />
+            <Badge variant="outline" className="cursor-help text-xs">
+              <Hash className="mr-1 h-3 w-3" />
               {rowCount.toLocaleString("ru-RU")}
             </Badge>
           </TooltipTrigger>
@@ -130,17 +118,15 @@ export function QueryMetricsBar({
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge variant="outline" className="text-xs cursor-help">
-              <Database className="h-3 w-3 mr-1" />
+            <Badge variant="outline" className="cursor-help text-xs">
+              <Database className="mr-1 h-3 w-3" />
               {size}
             </Badge>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
             <div className="space-y-0.5">
               <div className="font-medium">Размер ответа</div>
-              <div className="text-muted-foreground">
-                {bytes.toLocaleString("ru-RU")} байт
-              </div>
+              <div className="text-muted-foreground">{bytes.toLocaleString("ru-RU")} байт</div>
             </div>
           </TooltipContent>
         </Tooltip>
@@ -148,16 +134,17 @@ export function QueryMetricsBar({
         {cached && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge variant="outline" className="text-xs cursor-help border-emerald-500/30 text-emerald-600">
-                <Zap className="h-3 w-3 mr-1" />
+              <Badge
+                variant="outline"
+                className="cursor-help border-emerald-500/30 text-xs text-emerald-600"
+              >
+                <Zap className="mr-1 h-3 w-3" />
                 {compact ? "Кэш" : "Из кэша"}
               </Badge>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
               <div className="font-medium">Кэш-попадание</div>
-              <div className="text-muted-foreground">
-                Запрос выполнен из кэша Tarantool
-              </div>
+              <div className="text-muted-foreground">Запрос выполнен из кэша Tarantool</div>
             </TooltipContent>
           </Tooltip>
         )}
@@ -181,9 +168,7 @@ export function useQueryMetrics() {
   const [isRunning, setIsRunning] = useState(false);
   const startRef = useRef<number>(0);
 
-  const runWithMetrics = async <T,>(
-    fn: () => Promise<T>
-  ): Promise<T> => {
+  const runWithMetrics = async <T,>(fn: () => Promise<T>): Promise<T> => {
     setIsRunning(true);
     startRef.current = performance.now();
     try {
@@ -275,7 +260,9 @@ function analyzeResult(result: unknown): {
 
   // Detect cache flag from common API wrappers
   const cached =
-    (typeof result === "object" && result !== null && "cached" in result &&
+    (typeof result === "object" &&
+      result !== null &&
+      "cached" in result &&
       Boolean((result as { cached: unknown }).cached)) ||
     false;
 
@@ -296,9 +283,7 @@ function analyzeResult(result: unknown): {
 
   const firstRow = rows[0];
   const columnCount =
-    typeof firstRow === "object" && firstRow !== null
-      ? Object.keys(firstRow as object).length
-      : 1;
+    typeof firstRow === "object" && firstRow !== null ? Object.keys(firstRow as object).length : 1;
 
   return { rowCount: rows.length, columnCount, bytes, cached };
 }
@@ -325,15 +310,13 @@ export function MetricsDelta({
     <Badge
       variant="outline"
       className={`text-xs ${
-        isSlower
-          ? "border-red-500/30 text-red-600"
-          : "border-emerald-500/30 text-emerald-600"
+        isSlower ? "border-red-500/30 text-red-600" : "border-emerald-500/30 text-emerald-600"
       }`}
     >
       {isSlower ? (
-        <TrendingUp className="h-3 w-3 mr-1" />
+        <TrendingUp className="mr-1 h-3 w-3" />
       ) : (
-        <TrendingDown className="h-3 w-3 mr-1" />
+        <TrendingDown className="mr-1 h-3 w-3" />
       )}
       {isSlower ? "+" : "−"}
       {Math.abs(pct)}%

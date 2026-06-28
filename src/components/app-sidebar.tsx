@@ -44,7 +44,16 @@ const NAV_SHORTCUTS: Partial<Record<AppView, string>> = {
   activity: "8",
 };
 
-const NAV_ORDER: AppView[] = ["dashboards", "explorer", "datasources", "plugins", "modules", "constructor", "activity", "settings"];
+const NAV_ORDER: AppView[] = [
+  "dashboards",
+  "explorer",
+  "datasources",
+  "plugins",
+  "modules",
+  "constructor",
+  "activity",
+  "settings",
+];
 
 export function AppSidebar({
   showShortcuts,
@@ -69,7 +78,7 @@ export function AppSidebar({
   };
 
   return (
-    <aside className="hidden md:flex flex-col border-r bg-muted/30 w-56 shrink-0">
+    <aside className="bg-muted/30 hidden w-56 shrink-0 flex-col border-r md:flex">
       <ScrollArea className="flex-1 py-4">
         <nav className="space-y-1 px-3">
           {NAV_ORDER.map((id) => {
@@ -78,7 +87,7 @@ export function AppSidebar({
               <button
                 key={id}
                 onClick={() => useGraphinyaStore.getState().setCurrentView(id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer group ${
+                className={`group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                   isActive
                     ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -87,9 +96,11 @@ export function AppSidebar({
                 {NAV_ICONS[id]}
                 <span className="flex-1 text-left">{navLabels[id]}</span>
                 {NAV_SHORTCUTS[id] && (
-                  <span className={`text-[10px] opacity-0 group-hover:opacity-100 transition-opacity ${
-                    isActive ? "text-amber-500/60" : "text-muted-foreground/60"
-                  }`}>
+                  <span
+                    className={`text-[10px] opacity-0 transition-opacity group-hover:opacity-100 ${
+                      isActive ? "text-amber-500/60" : "text-muted-foreground/60"
+                    }`}
+                  >
                     Alt+{NAV_SHORTCUTS[id]}
                   </span>
                 )}
@@ -103,9 +114,9 @@ export function AppSidebar({
         </div>
       </ScrollArea>
 
-      <div className="p-3 border-t">
-        <div className="p-3 rounded-lg bg-background/50 text-xs space-y-1.5">
-          <div className="flex items-center gap-2 font-medium text-foreground">
+      <div className="border-t p-3">
+        <div className="bg-background/50 space-y-1.5 rounded-lg p-3 text-xs">
+          <div className="text-foreground flex items-center gap-2 font-medium">
             <Activity className="h-3.5 w-3.5 text-amber-500" />
             {t("sidebar.footerVersion")}
           </div>
@@ -114,7 +125,7 @@ export function AppSidebar({
           <div className="pt-1">
             <button
               onClick={() => setShowShortcuts(!showShortcuts)}
-              className="text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-[10px] transition-colors"
             >
               <Keyboard className="h-2.5 w-2.5" />
               {t("common.keyboardHint")}
@@ -126,13 +137,7 @@ export function AppSidebar({
   );
 }
 
-export function MobileSidebar({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { currentView } = useGraphinyaStore();
   const { t } = useTranslation();
 
@@ -153,10 +158,10 @@ export function MobileSidebar({
   return (
     <div className="fixed inset-0 z-40 md:hidden">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <aside className="absolute left-0 top-0 bottom-0 w-64 bg-background border-r shadow-xl">
-        <div className="flex items-center justify-between h-14 px-4 border-b">
+      <aside className="bg-background absolute top-0 bottom-0 left-0 w-64 border-r shadow-xl">
+        <div className="flex h-14 items-center justify-between border-b px-4">
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600">
               <Activity className="h-3.5 w-3.5 text-white" />
             </div>
             <span className="text-sm font-bold">{t("common.appName")}</span>
@@ -175,8 +180,10 @@ export function MobileSidebar({
                   useGraphinyaStore.getState().setCurrentView(id);
                   onClose();
                 }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-                  isActive ? "bg-amber-500/10 text-amber-600" : "text-muted-foreground hover:bg-muted"
+                className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-amber-500/10 text-amber-600"
+                    : "text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {NAV_ICONS[id]}
@@ -185,7 +192,7 @@ export function MobileSidebar({
             );
           })}
         </nav>
-        <div className="p-3 border-t mt-4">
+        <div className="mt-4 border-t p-3">
           <Button
             variant="outline"
             className="w-full text-xs"
@@ -194,7 +201,7 @@ export function MobileSidebar({
               onClose();
             }}
           >
-            <Sparkles className="h-3.5 w-3.5 mr-2 text-violet-500" />
+            <Sparkles className="mr-2 h-3.5 w-3.5 text-violet-500" />
             {t("common.demoMode")}
           </Button>
         </div>

@@ -243,7 +243,13 @@ export function CommandPalette() {
     },
   ];
 
-  const allActions = [...actions, ...dashboardActions, ...dataSourceActions, ...pluginActions, ...quickActions];
+  const allActions = [
+    ...actions,
+    ...dashboardActions,
+    ...dataSourceActions,
+    ...pluginActions,
+    ...quickActions,
+  ];
 
   // Group actions
   const grouped = allActions.reduce<Record<string, CommandAction[]>>((acc, action) => {
@@ -254,51 +260,49 @@ export function CommandPalette() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Поиск по Графине..." />
-        <CommandList>
-          <CommandEmpty>Ничего не найдено.</CommandEmpty>
-          {Object.entries(grouped).map(([group, groupActions]) => {
-            if (groupActions.length === 0) return null;
-            return (
-              <div key={group}>
-                <CommandGroup heading={group}>
-                  {groupActions.map((action) => (
-                    <CommandItem
-                      key={action.id}
-                      value={`${action.label} ${action.hint || ""} ${action.keywords || ""}`}
-                      onSelect={() => action.action()}
-                    >
-                      {action.icon}
-                      <div className="flex flex-col flex-1">
-                        <span>{action.label}</span>
-                        {action.hint && (
-                          <span className="text-xs text-muted-foreground">{action.hint}</span>
-                        )}
-                      </div>
-                      {action.shortcut && (
-                        <CommandShortcut>{action.shortcut}</CommandShortcut>
+      <CommandInput placeholder="Поиск по Графине..." />
+      <CommandList>
+        <CommandEmpty>Ничего не найдено.</CommandEmpty>
+        {Object.entries(grouped).map(([group, groupActions]) => {
+          if (groupActions.length === 0) return null;
+          return (
+            <div key={group}>
+              <CommandGroup heading={group}>
+                {groupActions.map((action) => (
+                  <CommandItem
+                    key={action.id}
+                    value={`${action.label} ${action.hint || ""} ${action.keywords || ""}`}
+                    onSelect={() => action.action()}
+                  >
+                    {action.icon}
+                    <div className="flex flex-1 flex-col">
+                      <span>{action.label}</span>
+                      {action.hint && (
+                        <span className="text-muted-foreground text-xs">{action.hint}</span>
                       )}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-                <CommandSeparator />
-              </div>
-            );
-          })}
-          <CommandGroup heading="Справка">
-            <CommandItem
-              value="документация docs help помощь"
-              onSelect={() => {
-                window.open("https://docs.pult.tech/constructor", "_blank");
-                setOpen(false);
-              }}
-            >
-              <HelpCircle className="h-4 w-4" />
-              <span>Открыть документацию</span>
-              <CommandShortcut>docs.pult.tech</CommandShortcut>
-            </CommandItem>
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+                    </div>
+                    {action.shortcut && <CommandShortcut>{action.shortcut}</CommandShortcut>}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </div>
+          );
+        })}
+        <CommandGroup heading="Справка">
+          <CommandItem
+            value="документация docs help помощь"
+            onSelect={() => {
+              window.open("https://docs.pult.tech/constructor", "_blank");
+              setOpen(false);
+            }}
+          >
+            <HelpCircle className="h-4 w-4" />
+            <span>Открыть документацию</span>
+            <CommandShortcut>docs.pult.tech</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
   );
 }

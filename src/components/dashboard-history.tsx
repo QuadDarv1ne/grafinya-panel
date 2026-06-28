@@ -186,77 +186,78 @@ export function DashboardHistory({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+      <DialogContent className="max-h-[80vh] max-w-4xl overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="h-5 w-5 text-amber-500" />
             История изменений дашборда
           </DialogTitle>
           <DialogDescription>
-            Просмотр и восстановление предыдущих версий дашборда «{dashboard?.title}».
-            Снимки создаются автоматически при изменении виджетов и переменных.
+            Просмотр и восстановление предыдущих версий дашборда «{dashboard?.title}». Снимки
+            создаются автоматически при изменении виджетов и переменных.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[50vh]">
+        <div className="grid h-[50vh] grid-cols-1 gap-4 md:grid-cols-2">
           {/* Snapshot list */}
-          <div className="border rounded-lg flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
-              <span className="text-xs font-medium text-muted-foreground">
+          <div className="flex flex-col overflow-hidden rounded-lg border">
+            <div className="bg-muted/30 flex items-center justify-between border-b px-3 py-2">
+              <span className="text-muted-foreground text-xs font-medium">
                 Снимки состояния ({snapshots.length})
               </span>
               {snapshots.length > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                  className="text-muted-foreground hover:text-destructive h-7 text-xs"
                   onClick={handleClearAll}
                 >
-                  <Trash2 className="h-3 w-3 mr-1" /> Очистить
+                  <Trash2 className="mr-1 h-3 w-3" /> Очистить
                 </Button>
               )}
             </div>
             <ScrollArea className="flex-1">
               {snapshots.length === 0 ? (
-                <div className="p-6 text-center text-sm text-muted-foreground space-y-2">
-                  <History className="h-8 w-8 mx-auto opacity-40" />
+                <div className="text-muted-foreground space-y-2 p-6 text-center text-sm">
+                  <History className="mx-auto h-8 w-8 opacity-40" />
                   <p>История пуста</p>
                   <p className="text-xs">
                     Изменения, внесённые в дашборд, будут автоматически сохраняться здесь.
                   </p>
                 </div>
               ) : (
-                <div className="p-2 space-y-1">
+                <div className="space-y-1 p-2">
                   {snapshots.map((snap, idx) => (
                     <button
                       key={snap.id}
                       onClick={() => setPreviewId(snap.id)}
-                      className={`w-full text-left p-2 rounded-md border transition-colors ${
+                      className={`w-full rounded-md border p-2 text-left transition-colors ${
                         previewId === snap.id
                           ? "border-amber-500/40 bg-amber-500/5"
-                          : "border-transparent hover:bg-muted/50"
+                          : "hover:bg-muted/50 border-transparent"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
+                        <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
                             {idx === 0 ? (
-                              <Badge variant="outline" className="text-[10px] py-0 h-4 border-emerald-500/30 text-emerald-600">
+                              <Badge
+                                variant="outline"
+                                className="h-4 border-emerald-500/30 py-0 text-[10px] text-emerald-600"
+                              >
                                 Текущая
                               </Badge>
                             ) : null}
-                            <span className="text-sm font-medium truncate">
-                              {snap.label}
-                            </span>
+                            <span className="truncate text-sm font-medium">{snap.label}</span>
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
+                          <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-[11px]">
                             <Clock className="h-3 w-3" />
                             {formatTime(snap.timestamp)}
                             <span>·</span>
                             <span>{snap.widgets.length} виджетов</span>
                           </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
                       </div>
                     </button>
                   ))}
@@ -266,43 +267,41 @@ export function DashboardHistory({
           </div>
 
           {/* Preview panel */}
-          <div className="border rounded-lg flex flex-col overflow-hidden">
-            <div className="px-3 py-2 border-b bg-muted/30">
-              <span className="text-xs font-medium text-muted-foreground">
-                Предпросмотр
-              </span>
+          <div className="flex flex-col overflow-hidden rounded-lg border">
+            <div className="bg-muted/30 border-b px-3 py-2">
+              <span className="text-muted-foreground text-xs font-medium">Предпросмотр</span>
             </div>
             <ScrollArea className="flex-1">
               {previewSnapshot ? (
-                <div className="p-3 space-y-3">
+                <div className="space-y-3 p-3">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Заголовок</p>
+                    <p className="text-muted-foreground mb-1 text-xs">Заголовок</p>
                     <p className="text-sm font-medium">{previewSnapshot.title}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Время создания</p>
+                    <p className="text-muted-foreground mb-1 text-xs">Время создания</p>
                     <p className="text-sm">{formatTime(previewSnapshot.timestamp)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Описание</p>
+                    <p className="text-muted-foreground mb-1 text-xs">Описание</p>
                     <p className="text-sm">{previewSnapshot.label}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">
+                    <p className="text-muted-foreground mb-1 text-xs">
                       Виджеты ({previewSnapshot.widgets.length})
                     </p>
                     <div className="space-y-1">
                       {previewSnapshot.widgets.length === 0 ? (
-                        <p className="text-xs text-muted-foreground italic">Нет виджетов</p>
+                        <p className="text-muted-foreground text-xs italic">Нет виджетов</p>
                       ) : (
                         previewSnapshot.widgets.map((w) => (
                           <div
                             key={w.id}
-                            className="flex items-center gap-2 text-xs p-1.5 rounded border bg-muted/30"
+                            className="bg-muted/30 flex items-center gap-2 rounded border p-1.5 text-xs"
                           >
-                            <Eye className="h-3 w-3 text-muted-foreground" />
-                            <span className="font-medium truncate flex-1">{w.title}</span>
-                            <Badge variant="outline" className="text-[10px] py-0 h-4">
+                            <Eye className="text-muted-foreground h-3 w-3" />
+                            <span className="flex-1 truncate font-medium">{w.title}</span>
+                            <Badge variant="outline" className="h-4 py-0 text-[10px]">
                               {w.type}
                             </Badge>
                           </div>
@@ -312,14 +311,14 @@ export function DashboardHistory({
                   </div>
                   {previewSnapshot.variables.length > 0 && (
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">
+                      <p className="text-muted-foreground mb-1 text-xs">
                         Переменные ({previewSnapshot.variables.length})
                       </p>
                       <div className="space-y-1">
                         {previewSnapshot.variables.map((v) => (
                           <div
                             key={v.name}
-                            className="flex items-center gap-2 text-xs p-1.5 rounded border bg-muted/30"
+                            className="bg-muted/30 flex items-center gap-2 rounded border p-1.5 text-xs"
                           >
                             <span className="font-mono font-medium">{v.name}</span>
                             <span className="text-muted-foreground">=</span>
@@ -331,8 +330,8 @@ export function DashboardHistory({
                   )}
                 </div>
               ) : (
-                <div className="p-6 text-center text-sm text-muted-foreground space-y-2">
-                  <Eye className="h-8 w-8 mx-auto opacity-40" />
+                <div className="text-muted-foreground space-y-2 p-6 text-center text-sm">
+                  <Eye className="mx-auto h-8 w-8 opacity-40" />
                   <p>Выберите снимок для предпросмотра</p>
                 </div>
               )}
@@ -348,7 +347,7 @@ export function DashboardHistory({
             disabled={!previewSnapshot}
             onClick={() => previewSnapshot && handleRestore(previewSnapshot)}
           >
-            <RotateCcw className="h-4 w-4 mr-2" />
+            <RotateCcw className="mr-2 h-4 w-4" />
             Восстановить версию
           </Button>
         </DialogFooter>
@@ -377,7 +376,10 @@ export function HistoryButton({ onClick, disabled, count }: HistoryButtonProps) 
       <History className="h-4 w-4" />
       История
       {count !== undefined && count > 0 && (
-        <Badge variant="secondary" className="ml-1 text-[10px] py-0 h-4 min-w-[16px] justify-center">
+        <Badge
+          variant="secondary"
+          className="ml-1 h-4 min-w-[16px] justify-center py-0 text-[10px]"
+        >
           {count}
         </Badge>
       )}

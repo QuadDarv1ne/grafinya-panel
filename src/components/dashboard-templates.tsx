@@ -72,12 +72,39 @@ const TEMPLATES: DashboardTemplate[] = [
     refreshTime: 30000,
     tags: ["мониторинг", "система", "devops"],
     widgets: [
-      { title: "CPU использование", type: "line", cols: 2, dataSourceId: "prometheus", query: 'metric="cpu_usage"' },
-      { title: "Память (RAM)", type: "area", dataSourceId: "prometheus", query: 'metric="memory_usage"' },
+      {
+        title: "CPU использование",
+        type: "line",
+        cols: 2,
+        dataSourceId: "prometheus",
+        query: 'metric="cpu_usage"',
+      },
+      {
+        title: "Память (RAM)",
+        type: "area",
+        dataSourceId: "prometheus",
+        query: 'metric="memory_usage"',
+      },
       { title: "Диск I/O", type: "bar", dataSourceId: "prometheus", query: 'metric="disk_io"' },
-      { title: "Сетевой трафик", type: "line", dataSourceId: "prometheus", query: 'metric="network_throughput"' },
-      { title: "Статус сервисов", type: "table", cols: 2, dataSourceId: "pult", query: "services=running" },
-      { title: "Распределение нагрузки", type: "pie", dataSourceId: "prometheus", query: 'metric="load_distribution"' },
+      {
+        title: "Сетевой трафик",
+        type: "line",
+        dataSourceId: "prometheus",
+        query: 'metric="network_throughput"',
+      },
+      {
+        title: "Статус сервисов",
+        type: "table",
+        cols: 2,
+        dataSourceId: "pult",
+        query: "services=running",
+      },
+      {
+        title: "Распределение нагрузки",
+        type: "pie",
+        dataSourceId: "prometheus",
+        query: 'metric="load_distribution"',
+      },
     ],
   },
   {
@@ -91,11 +118,39 @@ const TEMPLATES: DashboardTemplate[] = [
     refreshTime: 60000,
     tags: ["база данных", "postgres", "clickhouse", "производительность"],
     widgets: [
-      { title: "Запросов в секунду", type: "line", cols: 2, dataSourceId: "postgres", query: "SELECT count(*) FROM queries WHERE ts > now() - interval '1 min'" },
-      { title: "Активные подключения", type: "area", dataSourceId: "postgres", query: "SELECT count(*) FROM pg_stat_activity" },
-      { title: "Топ медленных запросов", type: "table", cols: 2, dataSourceId: "postgres", query: "SELECT query, mean_time FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10" },
-      { title: "Hit ratio кэша", type: "gauge", dataSourceId: "postgres", query: "SELECT sum(blks_hit) / sum(blks_hit + blks_read) FROM pg_stat_database" },
-      { title: "Размер таблиц", type: "bar", dataSourceId: "postgres", query: "SELECT relname, pg_total_relation_size(relid) FROM pg_statio_user_tables ORDER BY 2 DESC LIMIT 5" },
+      {
+        title: "Запросов в секунду",
+        type: "line",
+        cols: 2,
+        dataSourceId: "postgres",
+        query: "SELECT count(*) FROM queries WHERE ts > now() - interval '1 min'",
+      },
+      {
+        title: "Активные подключения",
+        type: "area",
+        dataSourceId: "postgres",
+        query: "SELECT count(*) FROM pg_stat_activity",
+      },
+      {
+        title: "Топ медленных запросов",
+        type: "table",
+        cols: 2,
+        dataSourceId: "postgres",
+        query: "SELECT query, mean_time FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10",
+      },
+      {
+        title: "Hit ratio кэша",
+        type: "gauge",
+        dataSourceId: "postgres",
+        query: "SELECT sum(blks_hit) / sum(blks_hit + blks_read) FROM pg_stat_database",
+      },
+      {
+        title: "Размер таблиц",
+        type: "bar",
+        dataSourceId: "postgres",
+        query:
+          "SELECT relname, pg_total_relation_size(relid) FROM pg_statio_user_tables ORDER BY 2 DESC LIMIT 5",
+      },
     ],
   },
   {
@@ -109,11 +164,32 @@ const TEMPLATES: DashboardTemplate[] = [
     refreshTime: 15000,
     tags: ["алерты", "инциденты", "monitoring"],
     widgets: [
-      { title: "Активные инциденты", type: "table", cols: 2, dataSourceId: "pult", query: "status=active" },
-      { title: "Алерты за 24ч", type: "bar", dataSourceId: "prometheus", query: 'metric="alerts_24h"' },
+      {
+        title: "Активные инциденты",
+        type: "table",
+        cols: 2,
+        dataSourceId: "pult",
+        query: "status=active",
+      },
+      {
+        title: "Алерты за 24ч",
+        type: "bar",
+        dataSourceId: "prometheus",
+        query: 'metric="alerts_24h"',
+      },
       { title: "По критичности", type: "pie", dataSourceId: "pult", query: "group=criticality" },
-      { title: "MTTR (среднее время восстановления)", type: "line", dataSourceId: "pult", query: "metric=mttr" },
-      { title: "Топ проблемных сервисов", type: "table", dataSourceId: "pult", query: "top=problematic" },
+      {
+        title: "MTTR (среднее время восстановления)",
+        type: "line",
+        dataSourceId: "pult",
+        query: "metric=mttr",
+      },
+      {
+        title: "Топ проблемных сервисов",
+        type: "table",
+        dataSourceId: "pult",
+        query: "top=problematic",
+      },
     ],
   },
   {
@@ -127,11 +203,39 @@ const TEMPLATES: DashboardTemplate[] = [
     refreshTime: 30000,
     tags: ["api", "latency", "http"],
     widgets: [
-      { title: "RPS по эндпоинтам", type: "line", cols: 2, dataSourceId: "prometheus", query: 'metric="http_requests_total"' },
-      { title: "Latency p50/p95/p99", type: "area", cols: 2, dataSourceId: "prometheus", query: 'metric="http_request_duration"' },
-      { title: "Статус-коды", type: "pie", dataSourceId: "prometheus", query: 'metric="http_status_codes"' },
-      { title: "Топ медленных эндпоинтов", type: "table", cols: 2, dataSourceId: "postgres", query: "SELECT endpoint, avg_duration FROM api_stats ORDER BY avg_duration DESC LIMIT 10" },
-      { title: "Ошибки 5xx", type: "bar", dataSourceId: "prometheus", query: 'metric="http_5xx_errors"' },
+      {
+        title: "RPS по эндпоинтам",
+        type: "line",
+        cols: 2,
+        dataSourceId: "prometheus",
+        query: 'metric="http_requests_total"',
+      },
+      {
+        title: "Latency p50/p95/p99",
+        type: "area",
+        cols: 2,
+        dataSourceId: "prometheus",
+        query: 'metric="http_request_duration"',
+      },
+      {
+        title: "Статус-коды",
+        type: "pie",
+        dataSourceId: "prometheus",
+        query: 'metric="http_status_codes"',
+      },
+      {
+        title: "Топ медленных эндпоинтов",
+        type: "table",
+        cols: 2,
+        dataSourceId: "postgres",
+        query: "SELECT endpoint, avg_duration FROM api_stats ORDER BY avg_duration DESC LIMIT 10",
+      },
+      {
+        title: "Ошибки 5xx",
+        type: "bar",
+        dataSourceId: "prometheus",
+        query: 'metric="http_5xx_errors"',
+      },
     ],
   },
   {
@@ -145,17 +249,45 @@ const TEMPLATES: DashboardTemplate[] = [
     refreshTime: 30000,
     tags: ["k8s", "docker", "инфраструктура"],
     widgets: [
-      { title: "Статус подов", type: "table", cols: 2, dataSourceId: "prometheus", query: 'metric="kube_pod_status"' },
-      { title: "Утилизация узлов", type: "bar", dataSourceId: "prometheus", query: 'metric="node_utilization"' },
-      { title: "Память по неймспейсам", type: "pie", dataSourceId: "prometheus", query: 'metric="kube_memory_usage"' },
-      { title: "Сетевой I/O", type: "line", cols: 2, dataSourceId: "prometheus", query: 'metric="container_network_io"' },
-      { title: "CPU по контейнерам", type: "bar", dataSourceId: "prometheus", query: 'metric="container_cpu"' },
+      {
+        title: "Статус подов",
+        type: "table",
+        cols: 2,
+        dataSourceId: "prometheus",
+        query: 'metric="kube_pod_status"',
+      },
+      {
+        title: "Утилизация узлов",
+        type: "bar",
+        dataSourceId: "prometheus",
+        query: 'metric="node_utilization"',
+      },
+      {
+        title: "Память по неймспейсам",
+        type: "pie",
+        dataSourceId: "prometheus",
+        query: 'metric="kube_memory_usage"',
+      },
+      {
+        title: "Сетевой I/O",
+        type: "line",
+        cols: 2,
+        dataSourceId: "prometheus",
+        query: 'metric="container_network_io"',
+      },
+      {
+        title: "CPU по контейнерам",
+        type: "bar",
+        dataSourceId: "prometheus",
+        query: 'metric="container_cpu"',
+      },
     ],
   },
   {
     id: "security-audit",
     title: "Аудит безопасности",
-    description: "Входы в систему, подозрительные действия, изменения прав, заблокированные попытки",
+    description:
+      "Входы в систему, подозрительные действия, изменения прав, заблокированные попытки",
     category: "security",
     icon: <Zap className="h-5 w-5" />,
     color: "text-amber-500",
@@ -163,11 +295,38 @@ const TEMPLATES: DashboardTemplate[] = [
     refreshTime: 60000,
     tags: ["безопасность", "аудит", "логи"],
     widgets: [
-      { title: "Входы за 24ч", type: "line", cols: 2, dataSourceId: "elasticsearch", query: '{"query":{"match":{"event":"login"}}}' },
-      { title: "Заблокированные попытки", type: "bar", dataSourceId: "elasticsearch", query: '{"query":{"match":{"event":"login_failed"}}}' },
-      { title: "Активные сессии", type: "table", cols: 2, dataSourceId: "pult", query: "sessions=active" },
-      { title: "По странам", type: "pie", dataSourceId: "elasticsearch", query: '{"aggs":{"countries":{"terms":{"field":"geo.country"}}}}' },
-      { title: "Изменения прав", type: "table", dataSourceId: "pult", query: "events=permission_change" },
+      {
+        title: "Входы за 24ч",
+        type: "line",
+        cols: 2,
+        dataSourceId: "elasticsearch",
+        query: '{"query":{"match":{"event":"login"}}}',
+      },
+      {
+        title: "Заблокированные попытки",
+        type: "bar",
+        dataSourceId: "elasticsearch",
+        query: '{"query":{"match":{"event":"login_failed"}}}',
+      },
+      {
+        title: "Активные сессии",
+        type: "table",
+        cols: 2,
+        dataSourceId: "pult",
+        query: "sessions=active",
+      },
+      {
+        title: "По странам",
+        type: "pie",
+        dataSourceId: "elasticsearch",
+        query: '{"aggs":{"countries":{"terms":{"field":"geo.country"}}}}',
+      },
+      {
+        title: "Изменения прав",
+        type: "table",
+        dataSourceId: "pult",
+        query: "events=permission_change",
+      },
     ],
   },
   {
@@ -181,11 +340,39 @@ const TEMPLATES: DashboardTemplate[] = [
     refreshTime: 300000,
     tags: ["business", "kpi", "выручка"],
     widgets: [
-      { title: "Выручка за период", type: "line", cols: 2, dataSourceId: "postgres", query: "SELECT date_trunc('day', created_at), sum(amount) FROM orders GROUP BY 1" },
-      { title: "Конверсия воронки", type: "bar", dataSourceId: "postgres", query: "SELECT stage, count(*) FROM funnel GROUP BY stage" },
-      { title: "Каналы привлечения", type: "pie", dataSourceId: "postgres", query: "SELECT channel, count(*) FROM users GROUP BY channel" },
-      { title: "Топ продуктов", type: "table", cols: 2, dataSourceId: "postgres", query: "SELECT product, sum(qty) FROM order_items GROUP BY 1 ORDER BY 2 DESC LIMIT 10" },
-      { title: "ARPU", type: "area", dataSourceId: "postgres", query: "SELECT date_trunc('week', created_at), sum(amount)/count(distinct user_id) FROM orders GROUP BY 1" },
+      {
+        title: "Выручка за период",
+        type: "line",
+        cols: 2,
+        dataSourceId: "postgres",
+        query: "SELECT date_trunc('day', created_at), sum(amount) FROM orders GROUP BY 1",
+      },
+      {
+        title: "Конверсия воронки",
+        type: "bar",
+        dataSourceId: "postgres",
+        query: "SELECT stage, count(*) FROM funnel GROUP BY stage",
+      },
+      {
+        title: "Каналы привлечения",
+        type: "pie",
+        dataSourceId: "postgres",
+        query: "SELECT channel, count(*) FROM users GROUP BY channel",
+      },
+      {
+        title: "Топ продуктов",
+        type: "table",
+        cols: 2,
+        dataSourceId: "postgres",
+        query: "SELECT product, sum(qty) FROM order_items GROUP BY 1 ORDER BY 2 DESC LIMIT 10",
+      },
+      {
+        title: "ARPU",
+        type: "area",
+        dataSourceId: "postgres",
+        query:
+          "SELECT date_trunc('week', created_at), sum(amount)/count(distinct user_id) FROM orders GROUP BY 1",
+      },
     ],
   },
   {
@@ -199,11 +386,38 @@ const TEMPLATES: DashboardTemplate[] = [
     refreshTime: 300000,
     tags: ["users", "analytics", "retention"],
     widgets: [
-      { title: "DAU/MAU", type: "line", cols: 2, dataSourceId: "clickhouse", query: "SELECT toDate(event_time), uniqExact(user_id) FROM events GROUP BY 1" },
-      { title: "Retention по когортам", type: "table", cols: 2, dataSourceId: "clickhouse", query: "SELECT cohort, day, retention FROM retention_table" },
-      { title: "Сессии по времени суток", type: "bar", dataSourceId: "clickhouse", query: "SELECT toHour(event_time), count() FROM sessions GROUP BY 1" },
-      { title: "Устройства", type: "pie", dataSourceId: "clickhouse", query: "SELECT device_type, count() FROM sessions GROUP BY 1" },
-      { title: "Топ страниц", type: "table", dataSourceId: "clickhouse", query: "SELECT path, count() FROM page_views GROUP BY 1 ORDER BY 2 DESC LIMIT 10" },
+      {
+        title: "DAU/MAU",
+        type: "line",
+        cols: 2,
+        dataSourceId: "clickhouse",
+        query: "SELECT toDate(event_time), uniqExact(user_id) FROM events GROUP BY 1",
+      },
+      {
+        title: "Retention по когортам",
+        type: "table",
+        cols: 2,
+        dataSourceId: "clickhouse",
+        query: "SELECT cohort, day, retention FROM retention_table",
+      },
+      {
+        title: "Сессии по времени суток",
+        type: "bar",
+        dataSourceId: "clickhouse",
+        query: "SELECT toHour(event_time), count() FROM sessions GROUP BY 1",
+      },
+      {
+        title: "Устройства",
+        type: "pie",
+        dataSourceId: "clickhouse",
+        query: "SELECT device_type, count() FROM sessions GROUP BY 1",
+      },
+      {
+        title: "Топ страниц",
+        type: "table",
+        dataSourceId: "clickhouse",
+        query: "SELECT path, count() FROM page_views GROUP BY 1 ORDER BY 2 DESC LIMIT 10",
+      },
     ],
   },
   {
@@ -217,11 +431,39 @@ const TEMPLATES: DashboardTemplate[] = [
     refreshTime: 120000,
     tags: ["ecommerce", "заказы", "выручка"],
     widgets: [
-      { title: "Заказы за день", type: "line", cols: 2, dataSourceId: "postgres", query: "SELECT date_trunc('day', created_at), count(*) FROM orders GROUP BY 1" },
-      { title: "Средний чек", type: "area", dataSourceId: "postgres", query: "SELECT date_trunc('day', created_at), avg(total) FROM orders GROUP BY 1" },
-      { title: "Брошенные корзины", type: "bar", dataSourceId: "postgres", query: "SELECT date_trunc('day', created_at), count(*) FROM abandoned_carts GROUP BY 1" },
-      { title: "Топ категорий", type: "pie", dataSourceId: "postgres", query: "SELECT category, sum(amount) FROM order_items GROUP BY 1" },
-      { title: "Топ товаров", type: "table", cols: 2, dataSourceId: "postgres", query: "SELECT product_name, sum(qty), sum(amount) FROM order_items GROUP BY 1 ORDER BY 3 DESC LIMIT 10" },
+      {
+        title: "Заказы за день",
+        type: "line",
+        cols: 2,
+        dataSourceId: "postgres",
+        query: "SELECT date_trunc('day', created_at), count(*) FROM orders GROUP BY 1",
+      },
+      {
+        title: "Средний чек",
+        type: "area",
+        dataSourceId: "postgres",
+        query: "SELECT date_trunc('day', created_at), avg(total) FROM orders GROUP BY 1",
+      },
+      {
+        title: "Брошенные корзины",
+        type: "bar",
+        dataSourceId: "postgres",
+        query: "SELECT date_trunc('day', created_at), count(*) FROM abandoned_carts GROUP BY 1",
+      },
+      {
+        title: "Топ категорий",
+        type: "pie",
+        dataSourceId: "postgres",
+        query: "SELECT category, sum(amount) FROM order_items GROUP BY 1",
+      },
+      {
+        title: "Топ товаров",
+        type: "table",
+        cols: 2,
+        dataSourceId: "postgres",
+        query:
+          "SELECT product_name, sum(qty), sum(amount) FROM order_items GROUP BY 1 ORDER BY 3 DESC LIMIT 10",
+      },
     ],
   },
 ];
@@ -246,16 +488,25 @@ interface DashboardTemplatesProps {
 }
 
 export function DashboardTemplates({ open, onOpenChange }: DashboardTemplatesProps) {
-  const { dashboards, setDashboards, isDemoMode, setSelectedDashboardId, setCurrentView, logActivity, addRecentItem } = useGraphinyaStore();
+  const {
+    dashboards,
+    setDashboards,
+    isDemoMode,
+    setSelectedDashboardId,
+    setCurrentView,
+    logActivity,
+    addRecentItem,
+  } = useGraphinyaStore();
   const { call } = useGraphinyaApi();
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState<DashboardTemplate | null>(null);
   const [customTitle, setCustomTitle] = useState("");
-  const [activeCategory, setActiveCategory] = useState<DashboardTemplate["category"] | "all">("all");
+  const [activeCategory, setActiveCategory] = useState<DashboardTemplate["category"] | "all">(
+    "all"
+  );
 
-  const filteredTemplates = activeCategory === "all"
-    ? TEMPLATES
-    : TEMPLATES.filter((t) => t.category === activeCategory);
+  const filteredTemplates =
+    activeCategory === "all" ? TEMPLATES : TEMPLATES.filter((t) => t.category === activeCategory);
 
   const handleApplyTemplate = async (template: DashboardTemplate) => {
     const title = customTitle.trim() || template.title;
@@ -345,7 +596,7 @@ export function DashboardTemplates({ open, onOpenChange }: DashboardTemplatesPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh]">
+      <DialogContent className="max-h-[85vh] max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <LayoutDashboard className="h-5 w-5 text-amber-500" />
@@ -357,7 +608,7 @@ export function DashboardTemplates({ open, onOpenChange }: DashboardTemplatesPro
         </DialogHeader>
 
         {/* Category filter */}
-        <div className="flex items-center gap-1 flex-wrap">
+        <div className="flex flex-wrap items-center gap-1">
           <Button
             variant={activeCategory === "all" ? "secondary" : "ghost"}
             size="sm"
@@ -383,39 +634,42 @@ export function DashboardTemplates({ open, onOpenChange }: DashboardTemplatesPro
         </div>
 
         {/* Templates grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto max-h-[55vh] pr-1">
+        <div className="grid max-h-[55vh] grid-cols-1 gap-3 overflow-y-auto pr-1 md:grid-cols-2">
           {filteredTemplates.map((template) => (
             <Card
               key={template.id}
-              className={`cursor-pointer transition-all hover:shadow-md hover:border-amber-500/50 ${
+              className={`cursor-pointer transition-all hover:border-amber-500/50 hover:shadow-md ${
                 selectedTemplate?.id === template.id ? "ring-2 ring-amber-500" : ""
               }`}
               onClick={() => setSelectedTemplate(template)}
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start gap-3">
-                  <div className={`h-10 w-10 rounded-lg ${template.bgColor} ${template.color} flex items-center justify-center shrink-0`}>
+                  <div
+                    className={`h-10 w-10 rounded-lg ${template.bgColor} ${template.color} flex shrink-0 items-center justify-center`}
+                  >
                     {template.icon}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <CardTitle className="text-sm">{template.title}</CardTitle>
-                    <Badge variant="outline" className={`text-[9px] mt-1 ${categoryColors[template.category]}`}>
+                    <Badge
+                      variant="outline"
+                      className={`mt-1 text-[9px] ${categoryColors[template.category]}`}
+                    >
                       {categoryLabels[template.category]}
                     </Badge>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {template.description}
-                </p>
+                <p className="text-muted-foreground line-clamp-2 text-xs">{template.description}</p>
 
                 {/* Widget types */}
-                <div className="flex items-center gap-1 flex-wrap">
+                <div className="flex flex-wrap items-center gap-1">
                   {template.widgets.slice(0, 6).map((w, idx) => (
                     <span
                       key={idx}
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground"
+                      className="bg-muted text-muted-foreground flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px]"
                       title={w.title}
                     >
                       {widgetTypeIcons[w.type] || <BarChart3 className="h-3 w-3" />}
@@ -423,16 +677,16 @@ export function DashboardTemplates({ open, onOpenChange }: DashboardTemplatesPro
                     </span>
                   ))}
                   {template.widgets.length > 6 && (
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-muted-foreground text-[10px]">
                       +{template.widgets.length - 6}
                     </span>
                   )}
                 </div>
 
                 {/* Tags */}
-                <div className="flex items-center gap-1 flex-wrap">
+                <div className="flex flex-wrap items-center gap-1">
                   {template.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-[9px] py-0">
+                    <Badge key={tag} variant="secondary" className="py-0 text-[9px]">
                       {tag}
                     </Badge>
                   ))}
@@ -444,20 +698,24 @@ export function DashboardTemplates({ open, onOpenChange }: DashboardTemplatesPro
 
         {/* Selected template details */}
         {selectedTemplate && (
-          <div className="border-t pt-3 space-y-3">
+          <div className="space-y-3 border-t pt-3">
             <div className="flex items-center gap-2">
               <Label className="text-xs">Название дашборда:</Label>
               <Input
                 value={customTitle}
                 onChange={(e) => setCustomTitle(e.target.value)}
                 placeholder={selectedTemplate.title}
-                className="h-8 text-sm flex-1"
+                className="h-8 flex-1 text-sm"
               />
             </div>
-            <div className="text-xs text-muted-foreground">
-              Будет создано виджетов: <strong className="text-foreground">{selectedTemplate.widgets.length}</strong>
+            <div className="text-muted-foreground text-xs">
+              Будет создано виджетов:{" "}
+              <strong className="text-foreground">{selectedTemplate.widgets.length}</strong>
               {" • "}
-              Авто-обновление: <strong className="text-foreground">{(selectedTemplate.refreshTime / 1000).toFixed(0)}с</strong>
+              Авто-обновление:{" "}
+              <strong className="text-foreground">
+                {(selectedTemplate.refreshTime / 1000).toFixed(0)}с
+              </strong>
             </div>
           </div>
         )}
@@ -469,10 +727,10 @@ export function DashboardTemplates({ open, onOpenChange }: DashboardTemplatesPro
           <Button
             onClick={() => selectedTemplate && handleApplyTemplate(selectedTemplate)}
             disabled={!selectedTemplate}
-            className="bg-amber-500 hover:bg-amber-600 text-white"
+            className="bg-amber-500 text-white hover:bg-amber-600"
           >
             Создать из шаблона
-            <ArrowRight className="h-4 w-4 ml-2" />
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </DialogFooter>
       </DialogContent>

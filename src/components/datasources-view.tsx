@@ -34,12 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Database,
   Plus,
@@ -64,14 +59,44 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 const PLUGIN_TYPES = [
-  { value: "prometheus", label: "Prometheus / Victoria Metrics", icon: <Globe className="h-4 w-4 text-orange-500" />, port: 8080 },
-  { value: "pult", label: "Пульт / Zabbix", icon: <Shield className="h-4 w-4 text-blue-500" />, port: 8081 },
-  { value: "postgres", label: "PostgreSQL / Postgres Pro", icon: <Database className="h-4 w-4 text-indigo-500" />, port: 8083 },
-  { value: "clickhouse", label: "ClickHouse", icon: <Database className="h-4 w-4 text-yellow-500" />, port: 8087 },
+  {
+    value: "prometheus",
+    label: "Prometheus / Victoria Metrics",
+    icon: <Globe className="h-4 w-4 text-orange-500" />,
+    port: 8080,
+  },
+  {
+    value: "pult",
+    label: "Пульт / Zabbix",
+    icon: <Shield className="h-4 w-4 text-blue-500" />,
+    port: 8081,
+  },
+  {
+    value: "postgres",
+    label: "PostgreSQL / Postgres Pro",
+    icon: <Database className="h-4 w-4 text-indigo-500" />,
+    port: 8083,
+  },
+  {
+    value: "clickhouse",
+    label: "ClickHouse",
+    icon: <Database className="h-4 w-4 text-yellow-500" />,
+    port: 8087,
+  },
   { value: "csv", label: "CSV", icon: <FileText className="h-4 w-4 text-green-500" />, port: 8082 },
   { value: "json", label: "JSON", icon: <Code2 className="h-4 w-4 text-purple-500" />, port: 8084 },
-  { value: "elasticsearch", label: "Elasticsearch", icon: <SearchIcon className="h-4 w-4 text-cyan-500" />, port: 8086 },
-  { value: "gitlab", label: "GitLab", icon: <GitBranch className="h-4 w-4 text-red-500" />, port: 8085 },
+  {
+    value: "elasticsearch",
+    label: "Elasticsearch",
+    icon: <SearchIcon className="h-4 w-4 text-cyan-500" />,
+    port: 8086,
+  },
+  {
+    value: "gitlab",
+    label: "GitLab",
+    icon: <GitBranch className="h-4 w-4 text-red-500" />,
+    port: 8085,
+  },
 ];
 
 const PLUGIN_DEFAULT_FIELDS: Record<string, DataSourceField[]> = {
@@ -198,7 +223,13 @@ export function DataSourcesView() {
       setDataSources(
         dataSources.map((ds) =>
           ds._id === editingDs._id
-            ? { ...ds, name: newName, fields: newFields, isDefault, updatedAt: new Date().toISOString() }
+            ? {
+                ...ds,
+                name: newName,
+                fields: newFields,
+                isDefault,
+                updatedAt: new Date().toISOString(),
+              }
             : ds
         )
       );
@@ -267,9 +298,7 @@ export function DataSourcesView() {
   };
 
   const handleFieldChange = (index: number, value: string) => {
-    setNewFields((prev) =>
-      prev.map((f, i) => (i === index ? { ...f, value } : f))
-    );
+    setNewFields((prev) => prev.map((f, i) => (i === index ? { ...f, value } : f)));
   };
 
   const resetForm = () => {
@@ -289,7 +318,9 @@ export function DataSourcesView() {
   const isConnected = connectionStatus === "connected" || connectionStatus === "demo";
 
   const getPluginIcon = (pluginId: string) =>
-    PLUGIN_TYPES.find((p) => p.value === pluginId)?.icon || <Database className="h-4 w-4 text-amber-500" />;
+    PLUGIN_TYPES.find((p) => p.value === pluginId)?.icon || (
+      <Database className="h-4 w-4 text-amber-500" />
+    );
 
   return (
     <div className="space-y-6">
@@ -300,16 +331,18 @@ export function DataSourcesView() {
           <p className="text-muted-foreground">
             {isConnected
               ? `${dataSources.length} источник${dataSources.length === 1 ? "" : dataSources.length < 5 ? "а" : "ов"} данных`
-              : "Подключения к базам данных, API и файлам"
-            }
+              : "Подключения к базам данных, API и файлам"}
           </p>
         </div>
         {isConnected && (
           <Button
-            onClick={() => { resetForm(); setShowCreate(true); }}
-            className="bg-amber-500 hover:bg-amber-600 text-white"
+            onClick={() => {
+              resetForm();
+              setShowCreate(true);
+            }}
+            className="bg-amber-500 text-white hover:bg-amber-600"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Новый источник
           </Button>
         )}
@@ -317,8 +350,8 @@ export function DataSourcesView() {
 
       {/* Disconnected banner */}
       {!isConnected && (
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
-          <Database className="h-5 w-5 text-amber-500 shrink-0" />
+        <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+          <Database className="h-5 w-5 shrink-0 text-amber-500" />
           <p className="text-sm text-amber-600 dark:text-amber-400">
             Подключитесь к серверу Графини для управления источниками данных.
           </p>
@@ -328,7 +361,7 @@ export function DataSourcesView() {
       {/* Search */}
       {isConnected && (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Поиск источников данных..."
             value={search}
@@ -340,23 +373,23 @@ export function DataSourcesView() {
 
       {/* Loading */}
       {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
-                  <div className="h-9 w-9 bg-muted rounded-lg" />
+                  <div className="bg-muted h-9 w-9 rounded-lg" />
                   <div>
-                    <div className="h-4 bg-muted rounded w-24 mb-1" />
-                    <div className="h-3 bg-muted rounded w-32" />
+                    <div className="bg-muted mb-1 h-4 w-24 rounded" />
+                    <div className="bg-muted h-3 w-32 rounded" />
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="h-3 bg-muted rounded w-full" />
-                  <div className="h-3 bg-muted rounded w-4/5" />
-                  <div className="h-3 bg-muted rounded w-3/5" />
+                  <div className="bg-muted h-3 w-full rounded" />
+                  <div className="bg-muted h-3 w-4/5 rounded" />
+                  <div className="bg-muted h-3 w-3/5 rounded" />
                 </div>
               </CardContent>
             </Card>
@@ -366,41 +399,40 @@ export function DataSourcesView() {
 
       {/* Data sources grid */}
       {!isLoading && filtered.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((ds) => {
             const pluginInfo = PLUGIN_TYPES.find((p) => p.value === ds.pluginId);
             return (
-              <Card key={ds._id} className="group hover:shadow-md transition-all">
+              <Card key={ds._id} className="group transition-all hover:shadow-md">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="p-2 rounded-lg bg-amber-500/10">
+                      <div className="rounded-lg bg-amber-500/10 p-2">
                         {getPluginIcon(ds.pluginId)}
                       </div>
                       <div>
-                        <CardTitle className="text-base font-semibold">
-                          {ds.name}
-                        </CardTitle>
-                        <p className="text-xs text-muted-foreground">
+                        <CardTitle className="text-base font-semibold">{ds.name}</CardTitle>
+                        <p className="text-muted-foreground text-xs">
                           {pluginInfo?.label || ds.pluginId}
                           {pluginInfo && (
-                            <span className="text-muted-foreground/60 ml-1">:{pluginInfo.port}</span>
+                            <span className="text-muted-foreground/60 ml-1">
+                              :{pluginInfo.port}
+                            </span>
                           )}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      {testResults[ds._id] !== undefined && (
-                        testResults[ds._id] ? (
+                      {testResults[ds._id] !== undefined &&
+                        (testResults[ds._id] ? (
                           <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                         ) : (
                           <XCircle className="h-4 w-4 text-red-500" />
-                        )
-                      )}
+                        ))}
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
                         onClick={() => handleTest(ds._id)}
                         disabled={testing === ds._id}
                         title="Проверить подключение"
@@ -414,7 +446,7 @@ export function DataSourcesView() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
                         onClick={() => handleEdit(ds)}
                         title="Редактировать"
                       >
@@ -423,7 +455,7 @@ export function DataSourcesView() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
+                        className="text-destructive h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
                         onClick={() => setDeleteTarget(ds._id)}
                         title="Удалить"
                       >
@@ -437,23 +469,23 @@ export function DataSourcesView() {
                     {ds.fields?.slice(0, 4).map((field) => (
                       <div key={field.code} className="flex justify-between text-xs">
                         <span className="text-muted-foreground">{field.name}</span>
-                        <span className="font-mono truncate ml-2 max-w-[50%]">
+                        <span className="ml-2 max-w-[50%] truncate font-mono">
                           {field.type === "password" && field.value ? "••••••" : field.value || "—"}
                         </span>
                       </div>
                     ))}
                     {ds.fields && ds.fields.length > 4 && (
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-muted-foreground text-[10px]">
                         +{ds.fields.length - 4} полей
                       </p>
                     )}
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="mt-2 flex items-center gap-2">
                       {ds.isDefault && (
                         <Badge variant="secondary" className="text-xs">
                           По умолчанию
                         </Badge>
                       )}
-                      <Badge variant="outline" className="text-xs text-muted-foreground">
+                      <Badge variant="outline" className="text-muted-foreground text-xs">
                         {new Date(ds.updatedAt).toLocaleDateString("ru-RU")}
                       </Badge>
                     </div>
@@ -468,17 +500,20 @@ export function DataSourcesView() {
       {/* Empty state */}
       {!isLoading && filtered.length === 0 && isConnected && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Plug className="h-12 w-12 text-muted-foreground/30 mb-4" />
+          <Plug className="text-muted-foreground/30 mb-4 h-12 w-12" />
           <h3 className="text-lg font-semibold">Источников данных нет</h3>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm">
             Создайте первый источник данных для подключения к вашим системам
           </p>
           <Button
-            onClick={() => { resetForm(); setShowCreate(true); }}
+            onClick={() => {
+              resetForm();
+              setShowCreate(true);
+            }}
             variant="outline"
             className="mt-4"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Создать источник
           </Button>
         </div>
@@ -491,16 +526,16 @@ export function DataSourcesView() {
             <CardTitle className="text-base">Поддерживаемые типы источников</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {PLUGIN_TYPES.map((type) => (
                 <div
                   key={type.value}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-background/50"
+                  className="bg-background/50 flex items-center gap-3 rounded-lg p-3"
                 >
                   {type.icon}
                   <div>
                     <p className="text-sm font-medium">{type.label}</p>
-                    <p className="text-[10px] text-muted-foreground">Порт :{type.port}</p>
+                    <p className="text-muted-foreground text-[10px]">Порт :{type.port}</p>
                   </div>
                 </div>
               ))}
@@ -510,7 +545,12 @@ export function DataSourcesView() {
       )}
 
       {/* Create Dialog */}
-      <Dialog open={showCreate} onOpenChange={(open) => { if (!open) resetForm(); }}>
+      <Dialog
+        open={showCreate}
+        onOpenChange={(open) => {
+          if (!open) resetForm();
+        }}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -518,7 +558,7 @@ export function DataSourcesView() {
               Новый источник данных
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[60vh] space-y-4 overflow-y-auto py-4">
             <div className="space-y-2">
               <Label>Название</Label>
               <Input
@@ -548,15 +588,21 @@ export function DataSourcesView() {
             {/* Dynamic fields based on plugin type */}
             {newFields.length > 0 && (
               <div className="space-y-3">
-                <Label className="text-xs text-muted-foreground">Параметры подключения</Label>
+                <Label className="text-muted-foreground text-xs">Параметры подключения</Label>
                 {newFields.map((field, idx) => (
                   <div key={field.code} className="space-y-1">
                     <Label className="text-xs">
                       {field.name}
-                      {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                      {field.required && <span className="ml-0.5 text-red-500">*</span>}
                     </Label>
                     <Input
-                      type={field.type === "password" ? "password" : field.type === "number" ? "number" : "text"}
+                      type={
+                        field.type === "password"
+                          ? "password"
+                          : field.type === "number"
+                            ? "number"
+                            : "text"
+                      }
                       placeholder={field.placeholder || field.name}
                       value={field.value || ""}
                       onChange={(e) => handleFieldChange(idx, e.target.value)}
@@ -573,7 +619,7 @@ export function DataSourcesView() {
                 onChange={(e) => setIsDefault(e.target.checked)}
                 className="rounded"
               />
-              <Label htmlFor="isDefault" className="text-sm cursor-pointer">
+              <Label htmlFor="isDefault" className="cursor-pointer text-sm">
                 Использовать по умолчанию
               </Label>
             </div>
@@ -585,7 +631,7 @@ export function DataSourcesView() {
             <Button
               onClick={handleCreate}
               disabled={!newName.trim() || !newPlugin}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
+              className="bg-amber-500 text-white hover:bg-amber-600"
             >
               Создать
             </Button>
@@ -602,29 +648,35 @@ export function DataSourcesView() {
               Редактировать источник
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[60vh] space-y-4 overflow-y-auto py-4">
             <div className="space-y-2">
               <Label>Название</Label>
-              <Input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-              />
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Тип плагина</Label>
-              <Input value={PLUGIN_TYPES.find((p) => p.value === newPlugin)?.label || newPlugin} disabled />
+              <Input
+                value={PLUGIN_TYPES.find((p) => p.value === newPlugin)?.label || newPlugin}
+                disabled
+              />
             </div>
             {newFields.length > 0 && (
               <div className="space-y-3">
-                <Label className="text-xs text-muted-foreground">Параметры подключения</Label>
+                <Label className="text-muted-foreground text-xs">Параметры подключения</Label>
                 {newFields.map((field, idx) => (
                   <div key={field.code} className="space-y-1">
                     <Label className="text-xs">
                       {field.name}
-                      {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                      {field.required && <span className="ml-0.5 text-red-500">*</span>}
                     </Label>
                     <Input
-                      type={field.type === "password" ? "password" : field.type === "number" ? "number" : "text"}
+                      type={
+                        field.type === "password"
+                          ? "password"
+                          : field.type === "number"
+                            ? "number"
+                            : "text"
+                      }
                       value={field.value || ""}
                       onChange={(e) => handleFieldChange(idx, e.target.value)}
                     />
@@ -640,7 +692,7 @@ export function DataSourcesView() {
                 onChange={(e) => setIsDefault(e.target.checked)}
                 className="rounded"
               />
-              <Label htmlFor="editIsDefault" className="text-sm cursor-pointer">
+              <Label htmlFor="editIsDefault" className="cursor-pointer text-sm">
                 Использовать по умолчанию
               </Label>
             </div>
@@ -652,9 +704,9 @@ export function DataSourcesView() {
             <Button
               onClick={handleSaveEdit}
               disabled={!newName.trim()}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
+              className="bg-amber-500 text-white hover:bg-amber-600"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="mr-2 h-4 w-4" />
               Сохранить
             </Button>
           </DialogFooter>

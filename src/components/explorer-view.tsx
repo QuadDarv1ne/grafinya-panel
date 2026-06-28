@@ -92,7 +92,8 @@ const DEMO_QUERIES = [
   },
   {
     label: "ClickHouse аналитика",
-    query: "SELECT toStartOfHour(timestamp) as h, count() as cnt FROM events GROUP BY h ORDER BY h DESC LIMIT 24",
+    query:
+      "SELECT toStartOfHour(timestamp) as h, count() as cnt FROM events GROUP BY h ORDER BY h DESC LIMIT 24",
     type: "clickhouse",
     icon: "📊",
   },
@@ -156,11 +157,14 @@ export function ExplorerView() {
 
   const activePalette = useMemo(() => getPaletteById(paletteId), [paletteId]);
 
-  const handlePaletteChange = useCallback((id: string) => {
-    setPaletteId(id);
-    savePreferredPaletteId(id);
-    toast({ title: "Палитра изменена", description: getPaletteById(id).name });
-  }, [toast]);
+  const handlePaletteChange = useCallback(
+    (id: string) => {
+      setPaletteId(id);
+      savePreferredPaletteId(id);
+      toast({ title: "Палитра изменена", description: getPaletteById(id).name });
+    },
+    [toast]
+  );
 
   // Load data sources in demo mode
   const activeDataSources = useMemo(() => {
@@ -227,7 +231,11 @@ export function ExplorerView() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка выполнения запроса");
-      toast({ title: "Ошибка запроса", description: "Не удалось выполнить запрос", variant: "destructive" });
+      toast({
+        title: "Ошибка запроса",
+        description: "Не удалось выполнить запрос",
+        variant: "destructive",
+      });
     } finally {
       setRunning(false);
     }
@@ -277,8 +285,8 @@ export function ExplorerView() {
 
       {/* Disconnected banner */}
       {!isConnected && (
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
-          <Search className="h-5 w-5 text-amber-500 shrink-0" />
+        <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+          <Search className="h-5 w-5 shrink-0 text-amber-500" />
           <p className="text-sm text-amber-600 dark:text-amber-400">
             Подключитесь к серверу или включите демо-режим для выполнения запросов.
           </p>
@@ -286,12 +294,12 @@ export function ExplorerView() {
       )}
 
       {isConnected && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* Query panel */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="space-y-4 lg:col-span-2">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Code2 className="h-4 w-4 text-amber-500" />
                   Запрос
                 </CardTitle>
@@ -299,7 +307,7 @@ export function ExplorerView() {
               <CardContent className="space-y-4">
                 {/* Data source selector */}
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Источник данных</Label>
+                  <Label className="text-muted-foreground text-xs">Источник данных</Label>
                   <Select value={selectedDs} onValueChange={setSelectedDs}>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите источник" />
@@ -316,12 +324,12 @@ export function ExplorerView() {
 
                 {/* Query editor */}
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Запрос</Label>
+                  <Label className="text-muted-foreground text-xs">Запрос</Label>
                   <Textarea
                     placeholder='Введите запрос... Например: metric="cpu_usage"'
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="font-mono text-sm min-h-[120px] resize-y"
+                    className="min-h-[120px] resize-y font-mono text-sm"
                     onKeyDown={(e) => {
                       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
                         handleRun();
@@ -329,9 +337,7 @@ export function ExplorerView() {
                     }}
                   />
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] text-muted-foreground">
-                      Ctrl+Enter для выполнения
-                    </p>
+                    <p className="text-muted-foreground text-[10px]">Ctrl+Enter для выполнения</p>
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
@@ -340,7 +346,7 @@ export function ExplorerView() {
                         onClick={() => query && setShowSaveDialog(true)}
                         disabled={!query.trim()}
                       >
-                        <Save className="h-3 w-3 mr-1" />
+                        <Save className="mr-1 h-3 w-3" />
                         Сохранить
                       </Button>
                     </div>
@@ -352,23 +358,31 @@ export function ExplorerView() {
                   <Button
                     onClick={handleRun}
                     disabled={running || (!selectedDs && !isDemoMode) || !query.trim()}
-                    className="bg-amber-500 hover:bg-amber-600 text-white"
+                    className="bg-amber-500 text-white hover:bg-amber-600"
                   >
                     {running ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
-                      <Play className="h-4 w-4 mr-2" />
+                      <Play className="mr-2 h-4 w-4" />
                     )}
                     Выполнить
                   </Button>
-                  <Button variant="outline" onClick={() => { setQuery(""); setResult(null); setError(null); }} size="sm">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setQuery("");
+                      setResult(null);
+                      setError(null);
+                    }}
+                    size="sm"
+                  >
                     Очистить
                   </Button>
                 </div>
 
                 {/* Quick queries */}
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Быстрые запросы</Label>
+                  <Label className="text-muted-foreground text-xs">Быстрые запросы</Label>
                   <div className="flex flex-wrap gap-2">
                     {DEMO_QUERIES.map((q) => (
                       <Button
@@ -380,7 +394,7 @@ export function ExplorerView() {
                       >
                         <span className="mr-1">{q.icon}</span>
                         {q.label}
-                        <Badge variant="secondary" className="text-[8px] ml-1.5 px-1">
+                        <Badge variant="secondary" className="ml-1.5 px-1 text-[8px]">
                           {q.type}
                         </Badge>
                       </Button>
@@ -395,7 +409,7 @@ export function ExplorerView() {
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
                       {error ? (
                         <AlertCircle className="h-4 w-4 text-red-500" />
                       ) : (
@@ -403,31 +417,37 @@ export function ExplorerView() {
                       )}
                       Результат
                       {result !== null && (
-                        <Badge variant="secondary" className="text-xs ml-2">
+                        <Badge variant="secondary" className="ml-2 text-xs">
                           200 OK
                         </Badge>
                       )}
                     </CardTitle>
                     {/* Chart type selector + palette + export */}
                     {result !== null && !error && (
-                      <div className="flex gap-1 items-center flex-wrap">
+                      <div className="flex flex-wrap items-center gap-1">
                         <div className="flex gap-1">
                           {(["area", "line", "bar"] as const).map((ct) => (
                             <Button
                               key={ct}
                               variant={chartType === ct ? "secondary" : "ghost"}
                               size="sm"
-                              className="h-6 text-[10px] px-2"
+                              className="h-6 px-2 text-[10px]"
                               onClick={() => setChartType(ct)}
                             >
-                              {ct === "area" ? <Activity className="h-3 w-3" /> : ct === "line" ? <TrendingUp className="h-3 w-3" /> : <BarChart3 className="h-3 w-3" />}
+                              {ct === "area" ? (
+                                <Activity className="h-3 w-3" />
+                              ) : ct === "line" ? (
+                                <TrendingUp className="h-3 w-3" />
+                              ) : (
+                                <BarChart3 className="h-3 w-3" />
+                              )}
                             </Button>
                           ))}
                         </div>
-                        <div className="h-4 w-px bg-border mx-1" />
+                        <div className="bg-border mx-1 h-4 w-px" />
                         {/* Palette selector */}
                         <Select value={paletteId} onValueChange={handlePaletteChange}>
-                          <SelectTrigger className="h-6 w-[110px] text-[10px] px-2 py-0 gap-1">
+                          <SelectTrigger className="h-6 w-[110px] gap-1 px-2 py-0 text-[10px]">
                             <PaletteIcon className="h-3 w-3" />
                             <SelectValue />
                           </SelectTrigger>
@@ -437,7 +457,11 @@ export function ExplorerView() {
                                 <div className="flex items-center gap-2">
                                   <div className="flex gap-0.5">
                                     {p.colors.slice(0, 4).map((c) => (
-                                      <div key={c} className="h-2 w-2 rounded-full" style={{ background: c }} />
+                                      <div
+                                        key={c}
+                                        className="h-2 w-2 rounded-full"
+                                        style={{ background: c }}
+                                      />
                                     ))}
                                   </div>
                                   <span>{p.name}</span>
@@ -446,32 +470,38 @@ export function ExplorerView() {
                             ))}
                           </SelectContent>
                         </Select>
-                        <div className="h-4 w-px bg-border mx-1" />
+                        <div className="bg-border mx-1 h-4 w-px" />
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 text-[10px] px-2"
+                          className="h-6 px-2 text-[10px]"
                           onClick={() => {
                             const rows = chartData.slice(0, 12).map((d) => ({ ...d }));
                             exportCSV(rows, "grafinya-query-result");
-                            toast({ title: "Экспорт выполнен", description: "Данные сохранены в CSV" });
+                            toast({
+                              title: "Экспорт выполнен",
+                              description: "Данные сохранены в CSV",
+                            });
                           }}
                           title="Экспорт в CSV"
                         >
-                          <FileSpreadsheet className="h-3 w-3 mr-1" />
+                          <FileSpreadsheet className="mr-1 h-3 w-3" />
                           CSV
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 text-[10px] px-2"
+                          className="h-6 px-2 text-[10px]"
                           onClick={() => {
                             exportJSON(result, "grafinya-query-result");
-                            toast({ title: "Экспорт выполнен", description: "Данные сохранены в JSON" });
+                            toast({
+                              title: "Экспорт выполнен",
+                              description: "Данные сохранены в JSON",
+                            });
                           }}
                           title="Экспорт в JSON"
                         >
-                          <FileJson className="h-3 w-3 mr-1" />
+                          <FileJson className="mr-1 h-3 w-3" />
                           JSON
                         </Button>
                       </div>
@@ -480,138 +510,232 @@ export function ExplorerView() {
                 </CardHeader>
                 <CardContent>
                   {error ? (
-                    <div className="bg-red-500/10 text-red-600 dark:text-red-400 text-sm p-4 rounded-lg">
+                    <div className="rounded-lg bg-red-500/10 p-4 text-sm text-red-600 dark:text-red-400">
                       {error}
                     </div>
                   ) : (
                     <>
-                    {/* Query metrics bar */}
-                    <div className="flex items-center justify-between mb-3 pb-3 border-b">
-                      <QueryMetricsBar metrics={metrics} isRunning={metricsRunning} />
-                      {result !== null && (
-                        <Badge variant="secondary" className="text-xs">
-                          200 OK
-                        </Badge>
-                      )}
-                    </div>
-                    <Tabs value={resultTab} onValueChange={setResultTab}>
-                      <TabsList className="mb-3">
-                        <TabsTrigger value="chart" className="text-xs">
-                          <BarChart3 className="h-3 w-3 mr-1" />
-                          График
-                        </TabsTrigger>
-                        <TabsTrigger value="table" className="text-xs">
-                          <Table2 className="h-3 w-3 mr-1" />
-                          Таблица
-                        </TabsTrigger>
-                        <TabsTrigger value="json" className="text-xs">
-                          <Code2 className="h-3 w-3 mr-1" />
-                          JSON
-                        </TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="chart">
-                        <div className="h-72">
-                          <ResponsiveContainer width="100%" height="100%">
-                            {chartType === "area" ? (
-                              <AreaChart data={chartData.slice(0, 12)}>
-                                <defs>
-                                  <linearGradient id="explorerGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={activePalette.colors[0]} stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor={activePalette.colors[0]} stopOpacity={0} />
-                                  </linearGradient>
-                                  <linearGradient id="explorerGrad2" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={activePalette.colors[1]} stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor={activePalette.colors[1]} stopOpacity={0} />
-                                  </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                                <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-                                <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-                                <Tooltip contentStyle={tooltipStyle} />
-                                <Legend />
-                                <Area type="monotone" dataKey="cpu" stroke={activePalette.colors[0]} fill="url(#explorerGrad)" strokeWidth={2} name="CPU %" />
-                                <Area type="monotone" dataKey="memory" stroke={activePalette.colors[1]} fill="url(#explorerGrad2)" strokeWidth={2} name="Memory %" />
-                              </AreaChart>
-                            ) : chartType === "line" ? (
-                              <LineChart data={chartData.slice(0, 12)}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                                <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-                                <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-                                <Tooltip contentStyle={tooltipStyle} />
-                                <Legend />
-                                <Line type="monotone" dataKey="cpu" stroke={activePalette.colors[0]} strokeWidth={2} dot={{ r: 3 }} name="CPU %" />
-                                <Line type="monotone" dataKey="memory" stroke={activePalette.colors[1]} strokeWidth={2} dot={{ r: 3 }} name="Memory %" />
-                              </LineChart>
-                            ) : (
-                              <BarChart data={chartData.slice(0, 12)}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                                <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-                                <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
-                                <Tooltip contentStyle={tooltipStyle} />
-                                <Legend />
-                                <Bar dataKey="cpu" fill={activePalette.colors[0]} radius={[3, 3, 0, 0]} name="CPU %" />
-                                <Bar dataKey="memory" fill={activePalette.colors[1]} radius={[3, 3, 0, 0]} name="Memory %" />
-                              </BarChart>
-                            )}
-                          </ResponsiveContainer>
-                        </div>
-                      </TabsContent>
-                      <TabsContent value="table">
-                        <div className="max-h-72 overflow-auto rounded-lg border">
-                          <table className="w-full text-xs">
-                            <thead className="bg-muted/50 sticky top-0">
-                              <tr>
-                                <th className="p-2 text-left font-medium">Время</th>
-                                <th className="p-2 text-right font-medium">CPU %</th>
-                                <th className="p-2 text-right font-medium">Memory %</th>
-                                <th className="p-2 text-right font-medium">Запросы</th>
-                                <th className="p-2 text-right font-medium">Ошибки</th>
-                                <th className="p-2 text-right font-medium">Latency</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {chartData.slice(0, 12).map((row, i) => (
-                                <tr key={i} className="border-t hover:bg-muted/30">
-                                  <td className="p-2 font-mono">{row.time}</td>
-                                  <td className="p-2 text-right font-mono">
-                                    <span className={row.cpu > 70 ? "text-red-500" : row.cpu > 50 ? "text-amber-500" : ""}>
-                                      {row.cpu.toFixed(1)}
-                                    </span>
-                                  </td>
-                                  <td className="p-2 text-right font-mono">
-                                    <span className={row.memory > 80 ? "text-red-500" : row.memory > 60 ? "text-amber-500" : ""}>
-                                      {row.memory.toFixed(1)}
-                                    </span>
-                                  </td>
-                                  <td className="p-2 text-right font-mono">{row.requests}</td>
-                                  <td className="p-2 text-right font-mono">
-                                    <span className={row.errors > 10 ? "text-red-500" : row.errors > 5 ? "text-amber-500" : ""}>
-                                      {row.errors}
-                                    </span>
-                                  </td>
-                                  <td className="p-2 text-right font-mono">{row.latency}ms</td>
+                      {/* Query metrics bar */}
+                      <div className="mb-3 flex items-center justify-between border-b pb-3">
+                        <QueryMetricsBar metrics={metrics} isRunning={metricsRunning} />
+                        {result !== null && (
+                          <Badge variant="secondary" className="text-xs">
+                            200 OK
+                          </Badge>
+                        )}
+                      </div>
+                      <Tabs value={resultTab} onValueChange={setResultTab}>
+                        <TabsList className="mb-3">
+                          <TabsTrigger value="chart" className="text-xs">
+                            <BarChart3 className="mr-1 h-3 w-3" />
+                            График
+                          </TabsTrigger>
+                          <TabsTrigger value="table" className="text-xs">
+                            <Table2 className="mr-1 h-3 w-3" />
+                            Таблица
+                          </TabsTrigger>
+                          <TabsTrigger value="json" className="text-xs">
+                            <Code2 className="mr-1 h-3 w-3" />
+                            JSON
+                          </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="chart">
+                          <div className="h-72">
+                            <ResponsiveContainer width="100%" height="100%">
+                              {chartType === "area" ? (
+                                <AreaChart data={chartData.slice(0, 12)}>
+                                  <defs>
+                                    <linearGradient id="explorerGrad" x1="0" y1="0" x2="0" y2="1">
+                                      <stop
+                                        offset="5%"
+                                        stopColor={activePalette.colors[0]}
+                                        stopOpacity={0.3}
+                                      />
+                                      <stop
+                                        offset="95%"
+                                        stopColor={activePalette.colors[0]}
+                                        stopOpacity={0}
+                                      />
+                                    </linearGradient>
+                                    <linearGradient id="explorerGrad2" x1="0" y1="0" x2="0" y2="1">
+                                      <stop
+                                        offset="5%"
+                                        stopColor={activePalette.colors[1]}
+                                        stopOpacity={0.2}
+                                      />
+                                      <stop
+                                        offset="95%"
+                                        stopColor={activePalette.colors[1]}
+                                        stopOpacity={0}
+                                      />
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                                  <XAxis
+                                    dataKey="time"
+                                    tick={{ fontSize: 10 }}
+                                    stroke="var(--muted-foreground)"
+                                  />
+                                  <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+                                  <Tooltip contentStyle={tooltipStyle} />
+                                  <Legend />
+                                  <Area
+                                    type="monotone"
+                                    dataKey="cpu"
+                                    stroke={activePalette.colors[0]}
+                                    fill="url(#explorerGrad)"
+                                    strokeWidth={2}
+                                    name="CPU %"
+                                  />
+                                  <Area
+                                    type="monotone"
+                                    dataKey="memory"
+                                    stroke={activePalette.colors[1]}
+                                    fill="url(#explorerGrad2)"
+                                    strokeWidth={2}
+                                    name="Memory %"
+                                  />
+                                </AreaChart>
+                              ) : chartType === "line" ? (
+                                <LineChart data={chartData.slice(0, 12)}>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                                  <XAxis
+                                    dataKey="time"
+                                    tick={{ fontSize: 10 }}
+                                    stroke="var(--muted-foreground)"
+                                  />
+                                  <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+                                  <Tooltip contentStyle={tooltipStyle} />
+                                  <Legend />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="cpu"
+                                    stroke={activePalette.colors[0]}
+                                    strokeWidth={2}
+                                    dot={{ r: 3 }}
+                                    name="CPU %"
+                                  />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="memory"
+                                    stroke={activePalette.colors[1]}
+                                    strokeWidth={2}
+                                    dot={{ r: 3 }}
+                                    name="Memory %"
+                                  />
+                                </LineChart>
+                              ) : (
+                                <BarChart data={chartData.slice(0, 12)}>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                                  <XAxis
+                                    dataKey="time"
+                                    tick={{ fontSize: 10 }}
+                                    stroke="var(--muted-foreground)"
+                                  />
+                                  <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+                                  <Tooltip contentStyle={tooltipStyle} />
+                                  <Legend />
+                                  <Bar
+                                    dataKey="cpu"
+                                    fill={activePalette.colors[0]}
+                                    radius={[3, 3, 0, 0]}
+                                    name="CPU %"
+                                  />
+                                  <Bar
+                                    dataKey="memory"
+                                    fill={activePalette.colors[1]}
+                                    radius={[3, 3, 0, 0]}
+                                    name="Memory %"
+                                  />
+                                </BarChart>
+                              )}
+                            </ResponsiveContainer>
+                          </div>
+                        </TabsContent>
+                        <TabsContent value="table">
+                          <div className="max-h-72 overflow-auto rounded-lg border">
+                            <table className="w-full text-xs">
+                              <thead className="bg-muted/50 sticky top-0">
+                                <tr>
+                                  <th className="p-2 text-left font-medium">Время</th>
+                                  <th className="p-2 text-right font-medium">CPU %</th>
+                                  <th className="p-2 text-right font-medium">Memory %</th>
+                                  <th className="p-2 text-right font-medium">Запросы</th>
+                                  <th className="p-2 text-right font-medium">Ошибки</th>
+                                  <th className="p-2 text-right font-medium">Latency</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </TabsContent>
-                      <TabsContent value="json">
-                        <div className="relative">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-7 w-7"
-                            onClick={() => handleCopy(JSON.stringify(result, null, 2))}
-                          >
-                            {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                          </Button>
-                          <pre className="bg-muted/50 rounded-lg p-4 text-xs font-mono overflow-auto max-h-72">
-                            {JSON.stringify(result, null, 2)}
-                          </pre>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
+                              </thead>
+                              <tbody>
+                                {chartData.slice(0, 12).map((row, i) => (
+                                  <tr key={i} className="hover:bg-muted/30 border-t">
+                                    <td className="p-2 font-mono">{row.time}</td>
+                                    <td className="p-2 text-right font-mono">
+                                      <span
+                                        className={
+                                          row.cpu > 70
+                                            ? "text-red-500"
+                                            : row.cpu > 50
+                                              ? "text-amber-500"
+                                              : ""
+                                        }
+                                      >
+                                        {row.cpu.toFixed(1)}
+                                      </span>
+                                    </td>
+                                    <td className="p-2 text-right font-mono">
+                                      <span
+                                        className={
+                                          row.memory > 80
+                                            ? "text-red-500"
+                                            : row.memory > 60
+                                              ? "text-amber-500"
+                                              : ""
+                                        }
+                                      >
+                                        {row.memory.toFixed(1)}
+                                      </span>
+                                    </td>
+                                    <td className="p-2 text-right font-mono">{row.requests}</td>
+                                    <td className="p-2 text-right font-mono">
+                                      <span
+                                        className={
+                                          row.errors > 10
+                                            ? "text-red-500"
+                                            : row.errors > 5
+                                              ? "text-amber-500"
+                                              : ""
+                                        }
+                                      >
+                                        {row.errors}
+                                      </span>
+                                    </td>
+                                    <td className="p-2 text-right font-mono">{row.latency}ms</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </TabsContent>
+                        <TabsContent value="json">
+                          <div className="relative">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-2 right-2 h-7 w-7"
+                              onClick={() => handleCopy(JSON.stringify(result, null, 2))}
+                            >
+                              {copied ? (
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                            <pre className="bg-muted/50 max-h-72 overflow-auto rounded-lg p-4 font-mono text-xs">
+                              {JSON.stringify(result, null, 2)}
+                            </pre>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
                     </>
                   )}
                 </CardContent>
@@ -625,26 +749,31 @@ export function ExplorerView() {
             {savedQueries.length > 0 && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
                     <Save className="h-4 w-4 text-amber-500" />
                     Сохранённые
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                  <div className="max-h-40 space-y-2 overflow-y-auto">
                     {savedQueries.map((sq) => (
                       <div key={sq.id} className="flex items-center gap-2">
                         <button
-                          onClick={() => { setQuery(sq.query); setSelectedDs(sq.dataSourceId); }}
-                          className="flex-1 text-left p-2 rounded-lg bg-muted/50 hover:bg-muted text-xs truncate cursor-pointer transition-colors"
+                          onClick={() => {
+                            setQuery(sq.query);
+                            setSelectedDs(sq.dataSourceId);
+                          }}
+                          className="bg-muted/50 hover:bg-muted flex-1 cursor-pointer truncate rounded-lg p-2 text-left text-xs transition-colors"
                         >
                           <span className="font-medium">{sq.name}</span>
-                          <span className="text-muted-foreground ml-1 font-mono text-[10px]">({sq.query.slice(0, 20)}...)</span>
+                          <span className="text-muted-foreground ml-1 font-mono text-[10px]">
+                            ({sq.query.slice(0, 20)}...)
+                          </span>
                         </button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 shrink-0 text-muted-foreground"
+                          className="text-muted-foreground h-6 w-6 shrink-0"
                           onClick={() => handleDeleteSaved(sq.id)}
                         >
                           <Trash2 className="h-3 w-3" />
@@ -659,26 +788,26 @@ export function ExplorerView() {
             {/* Query history */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <History className="h-4 w-4 text-amber-500" />
                   История запросов
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {history.length > 0 ? (
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                  <div className="max-h-48 space-y-2 overflow-y-auto">
                     {history.map((q, i) => (
                       <button
                         key={i}
                         onClick={() => setQuery(q)}
-                        className="w-full text-left p-2 rounded-lg bg-muted/50 hover:bg-muted text-xs font-mono truncate cursor-pointer transition-colors"
+                        className="bg-muted/50 hover:bg-muted w-full cursor-pointer truncate rounded-lg p-2 text-left font-mono text-xs transition-colors"
                       >
                         {q}
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground text-center py-4">
+                  <p className="text-muted-foreground py-4 text-center text-xs">
                     Запросы пока не выполнялись
                   </p>
                 )}
@@ -688,7 +817,7 @@ export function ExplorerView() {
             {/* Plugin endpoints reference */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Code2 className="h-4 w-4 text-amber-500" />
                   API плагинов
                 </CardTitle>
@@ -697,23 +826,30 @@ export function ExplorerView() {
                 {[
                   { method: "GET", path: "/well-known", desc: "Метаданные" },
                   { method: "POST", path: "/datasource/health-check", desc: "Проверка связи" },
-                  { method: "POST", path: "/datasource/constructor-fields", desc: "Поля конфигурации" },
+                  {
+                    method: "POST",
+                    path: "/datasource/constructor-fields",
+                    desc: "Поля конфигурации",
+                  },
                   { method: "POST", path: "/query/constructor-fields", desc: "Поля запроса" },
                   { method: "POST", path: "/query/get-result", desc: "Выполнение запроса" },
                   { method: "POST", path: "/variable/values", desc: "Значения переменных" },
                 ].map((ep) => (
-                  <div key={ep.path} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 text-xs">
+                  <div
+                    key={ep.path}
+                    className="bg-muted/30 flex items-center gap-2 rounded-lg p-2 text-xs"
+                  >
                     <Badge
                       variant="outline"
-                      className={`text-[8px] px-1 font-mono ${
+                      className={`px-1 font-mono text-[8px] ${
                         ep.method === "GET"
-                          ? "text-emerald-600 border-emerald-500/30"
-                          : "text-blue-600 border-blue-500/30"
+                          ? "border-emerald-500/30 text-emerald-600"
+                          : "border-blue-500/30 text-blue-600"
                       }`}
                     >
                       {ep.method}
                     </Badge>
-                    <code className="font-mono flex-1 truncate">{ep.path}</code>
+                    <code className="flex-1 truncate font-mono">{ep.path}</code>
                     <span className="text-muted-foreground shrink-0">{ep.desc}</span>
                   </div>
                 ))}
@@ -723,14 +859,14 @@ export function ExplorerView() {
             {/* Query execution format */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Code2 className="h-4 w-4 text-amber-500" />
                   Формат запроса
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <pre className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono overflow-auto">
-{`POST /api/v1/query
+                <pre className="bg-muted/50 overflow-auto rounded-lg p-3 font-mono text-[10px]">
+                  {`POST /api/v1/query
 {
   "dataSourceId": "string",
   "queries": [{
@@ -772,7 +908,7 @@ export function ExplorerView() {
             <Button
               onClick={handleSaveQuery}
               disabled={!saveName.trim()}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
+              className="bg-amber-500 text-white hover:bg-amber-600"
             >
               Сохранить
             </Button>

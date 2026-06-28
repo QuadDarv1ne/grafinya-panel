@@ -114,10 +114,18 @@ interface GraphinyaState {
   updateDashboard: (id: string, updates: Partial<Dashboard>) => void;
   toggleDashboardFavorite: (id: string) => void;
   addWidgetToDashboard: (dashboardId: string, widget: Widget) => void;
-  updateWidgetInDashboard: (dashboardId: string, widgetId: string, updates: Partial<Widget>) => void;
+  updateWidgetInDashboard: (
+    dashboardId: string,
+    widgetId: string,
+    updates: Partial<Widget>
+  ) => void;
   removeWidgetFromDashboard: (dashboardId: string, widgetId: string) => void;
   reorderWidgetsInDashboard: (dashboardId: string, widgetIds: string[]) => void;
-  updateVariableInDashboard: (dashboardId: string, variableName: string, currentValue: string) => void;
+  updateVariableInDashboard: (
+    dashboardId: string,
+    variableName: string,
+    currentValue: string
+  ) => void;
 
   // Actions - Activity & recent
   logActivity: (entry: Omit<ActivityEntry, "id" | "timestamp">) => void;
@@ -269,7 +277,11 @@ export const useGraphinyaStore = create<GraphinyaState>()(
         set((state) => ({
           dashboards: state.dashboards.map((d) =>
             d._id === dashboardId
-              ? { ...d, widgets: [...(d.widgets || []), widget], updatedAt: new Date().toISOString() }
+              ? {
+                  ...d,
+                  widgets: [...(d.widgets || []), widget],
+                  updatedAt: new Date().toISOString(),
+                }
               : d
           ),
         })),
@@ -351,12 +363,11 @@ export const useGraphinyaStore = create<GraphinyaState>()(
 
       addRecentItem: (item) =>
         set((state) => {
-          const filtered = state.recentItems.filter((r) => !(r.id === item.id && r.type === item.type));
+          const filtered = state.recentItems.filter(
+            (r) => !(r.id === item.id && r.type === item.type)
+          );
           return {
-            recentItems: [
-              { ...item, timestamp: Date.now() },
-              ...filtered,
-            ].slice(0, 10), // cap at 10 items
+            recentItems: [{ ...item, timestamp: Date.now() }, ...filtered].slice(0, 10), // cap at 10 items
           };
         }),
 

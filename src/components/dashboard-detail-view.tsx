@@ -21,7 +21,12 @@ import { CSS } from "@dnd-kit/utilities";
 import { useGraphinyaStore } from "@/lib/store";
 import { useGraphinyaApi } from "@/hooks/use-grafinya-api";
 import type { Dashboard, Widget, DataSource } from "@/lib/grafinya-api";
-import { DEMO_DASHBOARDS, generateTimeSeriesData, generatePieData, generateTableData } from "@/lib/demo-data";
+import {
+  DEMO_DASHBOARDS,
+  generateTimeSeriesData,
+  generatePieData,
+  generateTableData,
+} from "@/lib/demo-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,8 +103,16 @@ import {
 } from "@/components/dashboard-history";
 
 const CHART_COLORS = [
-  "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#8b5cf6",
-  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
+  "#f59e0b",
+  "#10b981",
+  "#3b82f6",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+  "#06b6d4",
+  "#f97316",
+  "#14b8a6",
+  "#6366f1",
 ];
 
 const WIDGET_TYPES = [
@@ -120,7 +133,10 @@ const WIDGET_ICONS: Record<string, React.ReactNode> = {
  * Build a human-readable label for a snapshot based on what changed
  * relative to the previous snapshot.
  */
-function deriveSnapshotLabel(prev: { t?: string; w?: string[]; v?: string[] }, dashboard: Dashboard): string {
+function deriveSnapshotLabel(
+  prev: { t?: string; w?: string[]; v?: string[] },
+  dashboard: Dashboard
+): string {
   const changes: string[] = [];
   if (prev.t !== dashboard.title) changes.push("переименование");
   const prevWidgets = new Set(prev.w ?? []);
@@ -210,7 +226,14 @@ export function DashboardDetailView() {
 
   // Generate chart data based on time range
   const chartData = useMemo(() => {
-    const pointsMap: Record<string, number> = { "15m": 15, "1h": 24, "6h": 36, "24h": 48, "7d": 56, "30d": 60 };
+    const pointsMap: Record<string, number> = {
+      "15m": 15,
+      "1h": 24,
+      "6h": 36,
+      "24h": 48,
+      "7d": 56,
+      "30d": 60,
+    };
     return generateTimeSeriesData(pointsMap[timeRange] || 24);
   }, [timeRange]);
 
@@ -273,12 +296,16 @@ export function DashboardDetailView() {
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
     }
-    if (dashboard?.refreshTime && dashboard.refreshTime > 0 && (connectionStatus === "connected" || connectionStatus === "demo")) {
+    if (
+      dashboard?.refreshTime &&
+      dashboard.refreshTime > 0 &&
+      (connectionStatus === "connected" || connectionStatus === "demo")
+    ) {
       refreshIntervalRef.current = setInterval(() => {
         setLastRefresh(new Date());
         if (connectionStatus === "demo") {
           // Re-generate demo data by re-rendering
-          setDashboard((prev) => prev ? { ...prev } : null);
+          setDashboard((prev) => (prev ? { ...prev } : null));
         }
       }, dashboard.refreshTime);
     }
@@ -293,7 +320,7 @@ export function DashboardDetailView() {
     if (connectionStatus !== "demo") {
       await fetchDashboard();
     } else {
-      setDashboard((prev) => prev ? { ...prev } : null);
+      setDashboard((prev) => (prev ? { ...prev } : null));
     }
     setRefreshing(false);
     toast({ title: "Дашборд обновлён", description: "Данные обновлены успешно" });
@@ -307,7 +334,7 @@ export function DashboardDetailView() {
   const handleToggleFavorite = () => {
     if (dashboard) {
       toggleDashboardFavorite(dashboard._id);
-      setDashboard((prev) => prev ? { ...prev, isFavorite: !prev.isFavorite } : null);
+      setDashboard((prev) => (prev ? { ...prev, isFavorite: !prev.isFavorite } : null));
       toast({
         title: dashboard.isFavorite ? "Убрано из избранного" : "Добавлено в избранное",
         description: dashboard.title,
@@ -320,7 +347,7 @@ export function DashboardDetailView() {
     if (connectionStatus === "demo") {
       const store = useGraphinyaStore.getState();
       store.updateDashboard(dashboard._id, { title: editTitle, description: editDesc });
-      setDashboard((prev) => prev ? { ...prev, title: editTitle, description: editDesc } : null);
+      setDashboard((prev) => (prev ? { ...prev, title: editTitle, description: editDesc } : null));
     } else {
       try {
         await call({
@@ -328,9 +355,15 @@ export function DashboardDetailView() {
           method: "PUT",
           body: { title: editTitle, description: editDesc },
         });
-        setDashboard((prev) => prev ? { ...prev, title: editTitle, description: editDesc } : null);
+        setDashboard((prev) =>
+          prev ? { ...prev, title: editTitle, description: editDesc } : null
+        );
       } catch (err) {
-        toast({ title: "Ошибка сохранения", description: "Не удалось обновить дашборд", variant: "destructive" });
+        toast({
+          title: "Ошибка сохранения",
+          description: "Не удалось обновить дашборд",
+          variant: "destructive",
+        });
       }
     }
     setIsEditingDashboard(false);
@@ -370,9 +403,7 @@ export function DashboardDetailView() {
       removeWidgetFromDashboard(dashboard._id, widgetId);
     }
     setDashboard((prev) =>
-      prev
-        ? { ...prev, widgets: prev.widgets?.filter((w) => w.id !== widgetId) }
-        : null
+      prev ? { ...prev, widgets: prev.widgets?.filter((w) => w.id !== widgetId) } : null
     );
     toast({ title: "Виджет удалён", description: "Виджет был удалён из дашборда" });
     // Snapshot will be captured in a follow-up effect when dashboard updates
@@ -455,11 +486,7 @@ export function DashboardDetailView() {
         e.preventDefault();
         setPresentationMode(true);
       }
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        e.key.toLowerCase() === "h" &&
-        !e.shiftKey
-      ) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "h" && !e.shiftKey) {
         e.preventDefault();
         setHistoryOpen(true);
       }
@@ -499,7 +526,7 @@ export function DashboardDetailView() {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-48 rounded-xl" />
           ))}
@@ -511,10 +538,10 @@ export function DashboardDetailView() {
   if (!dashboard) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <LayoutDashboard className="h-12 w-12 text-muted-foreground/30 mb-4" />
+        <LayoutDashboard className="text-muted-foreground/30 mb-4 h-12 w-12" />
         <h3 className="text-lg font-semibold">Дашборд не найден</h3>
         <Button onClick={handleBack} variant="outline" className="mt-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Назад к списку
         </Button>
       </div>
@@ -525,16 +552,36 @@ export function DashboardDetailView() {
 
   // Stat cards for dashboard overview
   const statCards = [
-    { label: "Виджетов", value: widgets.length, icon: <BarChart3 className="h-4 w-4" />, color: "text-amber-500" },
-    { label: "Источников", value: new Set(widgets.map(w => w.dataSourceId).filter(Boolean)).size, icon: <Database className="h-4 w-4" />, color: "text-emerald-500" },
-    { label: "Обновление", value: dashboard.refreshTime ? `${(dashboard.refreshTime / 1000).toFixed(0)}с` : "—", icon: <Clock className="h-4 w-4" />, color: "text-blue-500" },
-    { label: "Переменных", value: dashboard.variables?.length || 0, icon: <Zap className="h-4 w-4" />, color: "text-violet-500" },
+    {
+      label: "Виджетов",
+      value: widgets.length,
+      icon: <BarChart3 className="h-4 w-4" />,
+      color: "text-amber-500",
+    },
+    {
+      label: "Источников",
+      value: new Set(widgets.map((w) => w.dataSourceId).filter(Boolean)).size,
+      icon: <Database className="h-4 w-4" />,
+      color: "text-emerald-500",
+    },
+    {
+      label: "Обновление",
+      value: dashboard.refreshTime ? `${(dashboard.refreshTime / 1000).toFixed(0)}с` : "—",
+      icon: <Clock className="h-4 w-4" />,
+      color: "text-blue-500",
+    },
+    {
+      label: "Переменных",
+      value: dashboard.variables?.length || 0,
+      icon: <Zap className="h-4 w-4" />,
+      color: "text-violet-500",
+    },
   ];
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={handleBack} className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
@@ -544,22 +591,29 @@ export function DashboardDetailView() {
               <Input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="text-lg font-bold h-9 w-64"
+                className="h-9 w-64 text-lg font-bold"
                 placeholder="Название дашборда"
               />
-              <Button size="icon" onClick={handleSaveDashboardInfo} className="h-9 w-9 bg-amber-500 hover:bg-amber-600 text-white">
+              <Button
+                size="icon"
+                onClick={handleSaveDashboardInfo}
+                className="h-9 w-9 bg-amber-500 text-white hover:bg-amber-600"
+              >
                 <Save className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" onClick={() => setIsEditingDashboard(false)} className="h-9 w-9">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setIsEditingDashboard(false)}
+                className="h-9 w-9"
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
           ) : (
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-bold tracking-tight">
-                  {dashboard.title}
-                </h2>
+                <h2 className="text-2xl font-bold tracking-tight">{dashboard.title}</h2>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -569,16 +623,14 @@ export function DashboardDetailView() {
                   <Star
                     className={`h-4 w-4 ${
                       dashboard.isFavorite
-                        ? "text-amber-500 fill-amber-500"
+                        ? "fill-amber-500 text-amber-500"
                         : "text-muted-foreground"
                     }`}
                   />
                 </Button>
               </div>
               {dashboard.description && (
-                <p className="text-muted-foreground text-sm mt-0.5">
-                  {dashboard.description}
-                </p>
+                <p className="text-muted-foreground mt-0.5 text-sm">{dashboard.description}</p>
               )}
             </div>
           )}
@@ -600,8 +652,8 @@ export function DashboardDetailView() {
           )}
           {/* Time range picker */}
           <Select value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
-            <SelectTrigger className="w-[100px] h-8 text-xs">
-              <Clock className="h-3 w-3 mr-1" />
+            <SelectTrigger className="h-8 w-[100px] text-xs">
+              <Clock className="mr-1 h-3 w-3" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -613,13 +665,8 @@ export function DashboardDetailView() {
               <SelectItem value="30d">30 дней</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             Обновить
           </Button>
           {/* History button */}
@@ -629,10 +676,13 @@ export function DashboardDetailView() {
             onClick={() => setHistoryOpen(true)}
             title="История изменений (Ctrl+H)"
           >
-            <History className="h-4 w-4 mr-2" />
+            <History className="mr-2 h-4 w-4" />
             История
             {snapshotCount > 0 && (
-              <Badge variant="secondary" className="ml-1.5 text-[10px] py-0 h-4 min-w-[16px] justify-center">
+              <Badge
+                variant="secondary"
+                className="ml-1.5 h-4 min-w-[16px] justify-center py-0 text-[10px]"
+              >
                 {snapshotCount}
               </Badge>
             )}
@@ -644,7 +694,7 @@ export function DashboardDetailView() {
             onClick={() => setPresentationMode(true)}
             title="Режим презентации (F)"
           >
-            <Play className="h-4 w-4 mr-2" />
+            <Play className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Презентация</span>
           </Button>
           {isConnected && (
@@ -661,18 +711,18 @@ export function DashboardDetailView() {
                       : "Перетащите виджеты для изменения порядка",
                   });
                 }}
-                className={editMode ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
+                className={editMode ? "bg-amber-500 text-white hover:bg-amber-600" : ""}
                 title={editMode ? "Выйти из режима редактирования" : "Войти в режим редактирования"}
               >
-                {editMode ? <Lock className="h-4 w-4 mr-2" /> : <Unlock className="h-4 w-4 mr-2" />}
+                {editMode ? <Lock className="mr-2 h-4 w-4" /> : <Unlock className="mr-2 h-4 w-4" />}
                 {editMode ? "Завершить" : "Изменить"}
               </Button>
               <Button
                 size="sm"
                 onClick={handleAddWidget}
-                className="bg-amber-500 hover:bg-amber-600 text-white"
+                className="bg-amber-500 text-white hover:bg-amber-600"
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Виджет
               </Button>
             </>
@@ -682,34 +732,33 @@ export function DashboardDetailView() {
 
       {/* Edit mode banner */}
       {editMode && (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-sm">
+        <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-700 dark:text-amber-400">
           <GripVertical className="h-4 w-4 shrink-0" />
           <span>
-            <strong>Режим редактирования:</strong> перетащите виджеты за ручку слева, чтобы изменить порядок. Используйте кнопки на карточках для редактирования и удаления.
+            <strong>Режим редактирования:</strong> перетащите виджеты за ручку слева, чтобы изменить
+            порядок. Используйте кнопки на карточках для редактирования и удаления.
           </span>
         </div>
       )}
 
       {/* Last refresh time */}
-      <p className="text-xs text-muted-foreground">
+      <p className="text-muted-foreground text-xs">
         Последнее обновление: {lastRefresh.toLocaleTimeString("ru-RU")}
         {dashboard.refreshTime && dashboard.refreshTime > 0 && (
-          <span className="ml-2 text-muted-foreground/60">
+          <span className="text-muted-foreground/60 ml-2">
             (авто-обновление каждые {(dashboard.refreshTime / 1000).toFixed(0)}с)
           </span>
         )}
       </p>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {statCards.map((stat) => (
-          <div key={stat.label} className="flex items-center gap-3 p-3 rounded-xl border bg-card">
-            <div className={`${stat.color}`}>
-              {stat.icon}
-            </div>
+          <div key={stat.label} className="bg-card flex items-center gap-3 rounded-xl border p-3">
+            <div className={`${stat.color}`}>{stat.icon}</div>
             <div>
-              <p className="text-lg font-bold leading-none">{stat.value}</p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
+              <p className="text-lg leading-none font-bold">{stat.value}</p>
+              <p className="text-muted-foreground text-xs">{stat.label}</p>
             </div>
           </div>
         ))}
@@ -717,19 +766,17 @@ export function DashboardDetailView() {
 
       {/* Variables - interactive selectors */}
       {dashboard.variables && dashboard.variables.length > 0 && (
-        <div className="flex flex-wrap gap-3 p-4 bg-muted/50 rounded-xl items-center">
-          <span className="text-sm font-medium text-muted-foreground">
-            Переменные:
-          </span>
+        <div className="bg-muted/50 flex flex-wrap items-center gap-3 rounded-xl p-4">
+          <span className="text-muted-foreground text-sm font-medium">Переменные:</span>
           {dashboard.variables.map((v) => (
             <div key={v.name} className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground">{v.name}:</span>
+              <span className="text-muted-foreground text-xs font-medium">{v.name}:</span>
               {v.values && v.values.length > 0 ? (
                 <Select
                   value={v.current || ""}
                   onValueChange={(val) => handleVariableChange(v.name, val)}
                 >
-                  <SelectTrigger className="h-7 text-xs w-auto min-w-[100px]">
+                  <SelectTrigger className="h-7 w-auto min-w-[100px] text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -763,16 +810,9 @@ export function DashboardDetailView() {
 
       {/* Widgets grid */}
       {widgets.length > 0 ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={widgets.map((w) => w.id || "")}
-            strategy={rectSortingStrategy}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={widgets.map((w) => w.id || "")} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {widgets.map((widget, idx) => {
                 const isWide = (widget.cols || 1) >= 2;
                 return (
@@ -798,17 +838,17 @@ export function DashboardDetailView() {
         </DndContext>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <BarChart3 className="h-12 w-12 text-muted-foreground/30 mb-4" />
+          <BarChart3 className="text-muted-foreground/30 mb-4 h-12 w-12" />
           <h3 className="text-lg font-semibold">Виджетов пока нет</h3>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm">
             Добавьте виджеты к дашборду для визуализации данных
           </p>
           {isConnected && (
             <Button
               onClick={handleAddWidget}
-              className="mt-4 bg-amber-500 hover:bg-amber-600 text-white"
+              className="mt-4 bg-amber-500 text-white hover:bg-amber-600"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Добавить виджет
             </Button>
           )}
@@ -829,7 +869,7 @@ export function DashboardDetailView() {
       {/* Fullscreen Widget Modal */}
       {fullscreenWidget && (
         <Dialog open={!!fullscreenWidget} onOpenChange={() => setFullscreenWidget(null)}>
-          <DialogContent className="max-w-4xl h-[80vh]">
+          <DialogContent className="h-[80vh] max-w-4xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {WIDGET_ICONS[fullscreenWidget.type] || <BarChart3 className="h-5 w-5" />}
@@ -839,8 +879,15 @@ export function DashboardDetailView() {
                 </Badge>
               </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 h-full">
-              {renderWidget(fullscreenWidget, widgets.indexOf(fullscreenWidget), chartData, pieData, tableData, true)}
+            <div className="h-full flex-1">
+              {renderWidget(
+                fullscreenWidget,
+                widgets.indexOf(fullscreenWidget),
+                chartData,
+                pieData,
+                tableData,
+                true
+              )}
             </div>
           </DialogContent>
         </Dialog>
@@ -858,10 +905,7 @@ export function DashboardDetailView() {
 
       {/* Presentation mode */}
       {presentationMode && dashboard && (
-        <PresentationMode
-          dashboardId={dashboard._id}
-          onExit={() => setPresentationMode(false)}
-        />
+        <PresentationMode dashboardId={dashboard._id} onExit={() => setPresentationMode(false)} />
       )}
     </div>
   );
@@ -986,7 +1030,7 @@ function WidgetEditorDialog({
             </div>
           )}
           {isDemo && (
-            <div className="bg-violet-500/5 border border-violet-500/20 rounded-lg p-3 text-xs text-violet-600 dark:text-violet-400">
+            <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 text-xs text-violet-600 dark:text-violet-400">
               В демо-режиме источник данных привязывается автоматически
             </div>
           )}
@@ -1007,9 +1051,9 @@ function WidgetEditorDialog({
           <Button
             onClick={handleSave}
             disabled={!title.trim()}
-            className="bg-amber-500 hover:bg-amber-600 text-white"
+            className="bg-amber-500 text-white hover:bg-amber-600"
           >
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="mr-2 h-4 w-4" />
             {widget ? "Сохранить" : "Добавить"}
           </Button>
         </DialogFooter>
@@ -1055,8 +1099,17 @@ function renderWidget(
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
-            <XAxis dataKey="time" tick={{ fontSize: isFullscreen ? 11 : 9 }} stroke="var(--muted-foreground)" interval="preserveStartEnd" />
-            <YAxis tick={{ fontSize: isFullscreen ? 11 : 9 }} stroke="var(--muted-foreground)" width={isFullscreen ? 50 : 35} />
+            <XAxis
+              dataKey="time"
+              tick={{ fontSize: isFullscreen ? 11 : 9 }}
+              stroke="var(--muted-foreground)"
+              interval="preserveStartEnd"
+            />
+            <YAxis
+              tick={{ fontSize: isFullscreen ? 11 : 9 }}
+              stroke="var(--muted-foreground)"
+              width={isFullscreen ? 50 : 35}
+            />
             <Tooltip contentStyle={tooltipStyle} />
             {isFullscreen && <Legend />}
             <Area
@@ -1085,8 +1138,16 @@ function renderWidget(
         <ResponsiveContainer width="100%" height={height}>
           <BarChart data={chartData.slice(-8)}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
-            <XAxis dataKey="time" tick={{ fontSize: isFullscreen ? 11 : 9 }} stroke="var(--muted-foreground)" />
-            <YAxis tick={{ fontSize: isFullscreen ? 11 : 9 }} stroke="var(--muted-foreground)" width={isFullscreen ? 50 : 35} />
+            <XAxis
+              dataKey="time"
+              tick={{ fontSize: isFullscreen ? 11 : 9 }}
+              stroke="var(--muted-foreground)"
+            />
+            <YAxis
+              tick={{ fontSize: isFullscreen ? 11 : 9 }}
+              stroke="var(--muted-foreground)"
+              width={isFullscreen ? 50 : 35}
+            />
             <Tooltip contentStyle={tooltipStyle} />
             {isFullscreen && <Legend />}
             <Bar
@@ -1133,26 +1194,31 @@ function renderWidget(
     case "table":
     default:
       return (
-        <div className="space-y-1.5 overflow-hidden h-full">
-          <div className="grid grid-cols-4 gap-2 text-[10px] font-medium text-muted-foreground border-b pb-1.5">
+        <div className="h-full space-y-1.5 overflow-hidden">
+          <div className="text-muted-foreground grid grid-cols-4 gap-2 border-b pb-1.5 text-[10px] font-medium">
             <span>Сервис</span>
             <span>Статус</span>
             <span className="text-right">Uptime</span>
             <span className="text-right">Latency</span>
           </div>
-          <div className={`overflow-y-auto space-y-1 ${isFullscreen ? "max-h-[60vh]" : "max-h-32"}`}>
+          <div
+            className={`space-y-1 overflow-y-auto ${isFullscreen ? "max-h-[60vh]" : "max-h-32"}`}
+          >
             {tableData.map((row) => (
-              <div key={row.name} className="grid grid-cols-4 gap-2 text-[10px] py-1 border-b border-border/30 hover:bg-muted/30 rounded px-1">
+              <div
+                key={row.name}
+                className="border-border/30 hover:bg-muted/30 grid grid-cols-4 gap-2 rounded border-b px-1 py-1 text-[10px]"
+              >
                 <span className="truncate font-medium">{row.name}</span>
                 <span>
                   <Badge
                     variant="outline"
-                    className={`text-[8px] px-1 py-0 ${
+                    className={`px-1 py-0 text-[8px] ${
                       row.status === "healthy"
                         ? "border-emerald-500/30 text-emerald-600"
                         : row.status === "warning"
-                        ? "border-amber-500/30 text-amber-600"
-                        : "border-red-500/30 text-red-600"
+                          ? "border-amber-500/30 text-amber-600"
+                          : "border-red-500/30 text-red-600"
                     }`}
                   >
                     {row.status === "healthy" ? "OK" : row.status === "warning" ? "WARN" : "CRIT"}
@@ -1175,7 +1241,13 @@ interface SortableWidgetCardProps {
   isWide: boolean;
   isConnected: boolean;
   editMode: boolean;
-  renderWidget: (widget: Widget, idx: number, chartData: ReturnType<typeof generateTimeSeriesData>, pieData: ReturnType<typeof generatePieData>, tableData: ReturnType<typeof generateTableData>) => React.ReactNode;
+  renderWidget: (
+    widget: Widget,
+    idx: number,
+    chartData: ReturnType<typeof generateTimeSeriesData>,
+    pieData: ReturnType<typeof generatePieData>,
+    tableData: ReturnType<typeof generateTableData>
+  ) => React.ReactNode;
   chartData: ReturnType<typeof generateTimeSeriesData>;
   pieData: ReturnType<typeof generatePieData>;
   tableData: ReturnType<typeof generateTableData>;
@@ -1219,18 +1291,18 @@ function SortableWidgetCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`${isWide ? "md:col-span-2" : ""} ${isDragging ? "ring-2 ring-amber-500 rounded-xl" : ""}`}
+      className={`${isWide ? "md:col-span-2" : ""} ${isDragging ? "rounded-xl ring-2 ring-amber-500" : ""}`}
     >
-      <Card className="overflow-hidden group hover:shadow-md transition-all h-full">
+      <Card className="group h-full overflow-hidden transition-all hover:shadow-md">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium truncate flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 truncate text-sm font-medium">
               {editMode && (
                 <button
                   ref={setActivatorNodeRef}
                   {...attributes}
                   {...listeners}
-                  className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
+                  className="text-muted-foreground hover:text-foreground cursor-grab touch-none active:cursor-grabbing"
                   title="Перетащите для изменения порядка"
                   aria-label="Перетащите виджет"
                 >
@@ -1241,7 +1313,7 @@ function SortableWidgetCard({
               {widget.title || "Без названия"}
             </CardTitle>
             <div className="flex items-center gap-1">
-              <Badge variant="outline" className="text-[10px] px-1.5">
+              <Badge variant="outline" className="px-1.5 text-[10px]">
                 {widget.type || "chart"}
               </Badge>
               {editMode && isConnected && (
@@ -1249,7 +1321,7 @@ function SortableWidgetCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
                     onClick={() => onEdit(widget)}
                   >
                     <Edit3 className="h-3 w-3" />
@@ -1257,7 +1329,7 @@ function SortableWidgetCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
+                    className="text-destructive h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
                     onClick={() => onDelete(widget.id)}
                   >
                     <Trash2 className="h-3 w-3" />
@@ -1268,7 +1340,7 @@ function SortableWidgetCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
                   onClick={() => onFullscreen(widget)}
                 >
                   <Maximize2 className="h-3 w-3" />
@@ -1279,12 +1351,10 @@ function SortableWidgetCard({
         </CardHeader>
         <CardContent className="pt-0">
           {widget.dataSourceId ? (
-            <div className="h-44">
-              {renderWidget(widget, idx, chartData, pieData, tableData)}
-            </div>
+            <div className="h-44">{renderWidget(widget, idx, chartData, pieData, tableData)}</div>
           ) : (
-            <div className="h-44 flex flex-col items-center justify-center text-muted-foreground">
-              <Table2 className="h-8 w-8 mb-2 opacity-30" />
+            <div className="text-muted-foreground flex h-44 flex-col items-center justify-center">
+              <Table2 className="mb-2 h-8 w-8 opacity-30" />
               <p className="text-xs">Нет данных</p>
             </div>
           )}

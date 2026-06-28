@@ -46,37 +46,36 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       const errorStack = this.state.error?.stack || "";
 
       return (
-        <div className="min-h-[60vh] flex items-center justify-center p-6">
-          <div className="max-w-lg w-full">
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 space-y-4">
+        <div className="flex min-h-[60vh] items-center justify-center p-6">
+          <div className="w-full max-w-lg">
+            <div className="space-y-4 rounded-2xl border border-red-500/20 bg-red-500/5 p-6">
               <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/10">
                   <AlertTriangle className="h-5 w-5 text-red-500" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-foreground">
-                    Что-то пошло не так
-                  </h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Произошла ошибка при отображении этого раздела. Попробуйте обновить страницу или вернуться на главную.
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-foreground text-lg font-bold">Что-то пошло не так</h2>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Произошла ошибка при отображении этого раздела. Попробуйте обновить страницу или
+                    вернуться на главную.
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-lg bg-background border p-3 space-y-2">
-                <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+              <div className="bg-background space-y-2 rounded-lg border p-3">
+                <div className="text-muted-foreground flex items-center gap-2 font-mono text-xs">
                   <Bug className="h-3.5 w-3.5" />
                   <span>Детали ошибки</span>
                 </div>
-                <p className="text-xs font-mono text-red-600 dark:text-red-400 break-words">
+                <p className="font-mono text-xs break-words text-red-600 dark:text-red-400">
                   {errorMessage}
                 </p>
                 {errorStack && (
                   <details className="text-xs">
-                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                    <summary className="text-muted-foreground hover:text-foreground cursor-pointer">
                       Показать стек
                     </summary>
-                    <pre className="mt-2 p-2 bg-muted rounded text-[10px] overflow-x-auto max-h-32">
+                    <pre className="bg-muted mt-2 max-h-32 overflow-x-auto rounded p-2 text-[10px]">
                       {errorStack}
                     </pre>
                   </details>
@@ -85,15 +84,15 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
               <div className="flex flex-wrap gap-2">
                 <Button onClick={this.handleReset} variant="default" size="sm">
-                  <RefreshCw className="h-3.5 w-3.5 mr-2" />
+                  <RefreshCw className="mr-2 h-3.5 w-3.5" />
                   Попробовать снова
                 </Button>
                 <Button onClick={this.handleReload} variant="outline" size="sm">
-                  <RefreshCw className="h-3.5 w-3.5 mr-2" />
+                  <RefreshCw className="mr-2 h-3.5 w-3.5" />
                   Обновить страницу
                 </Button>
                 <Button onClick={this.handleHome} variant="ghost" size="sm">
-                  <Home className="h-3.5 w-3.5 mr-2" />
+                  <Home className="mr-2 h-3.5 w-3.5" />
                   На главную
                 </Button>
               </div>

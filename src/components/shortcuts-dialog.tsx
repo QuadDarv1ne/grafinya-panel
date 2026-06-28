@@ -13,22 +13,22 @@ const SHORTCUTS_KEYS = [
   { keys: "Ctrl + Enter", key: "executeQuery" },
 ] as const;
 
-export function ShortcutsDialog({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+export function ShortcutsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={onClose}>
-      <div className="bg-background rounded-2xl shadow-2xl border p-6 max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold flex items-center gap-2">
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-background mx-4 w-full max-w-sm rounded-2xl border p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-lg font-bold">
             <Keyboard className="h-5 w-5 text-amber-500" />
             {t("common.shortcutsTitle")}
           </h3>
@@ -44,7 +44,9 @@ export function ShortcutsDialog({
                 {shortcut.keys.split(" + ").map((key, i) => (
                   <span key={i} className="flex items-center gap-1">
                     {i > 0 && <span className="text-muted-foreground text-xs">+</span>}
-                    <kbd className="px-2 py-0.5 bg-muted rounded text-xs font-mono border">{key}</kbd>
+                    <kbd className="bg-muted rounded border px-2 py-0.5 font-mono text-xs">
+                      {key}
+                    </kbd>
                   </span>
                 ))}
               </div>

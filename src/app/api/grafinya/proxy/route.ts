@@ -4,16 +4,19 @@ import { z } from "zod";
 const ALLOWED_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
 
 const ProxyRequestSchema = z.object({
-  path: z.string().min(1).refine(
-    (p) => !p.includes("..") && !p.includes("//"),
-    "Path must not contain .. or //"
-  ),
+  path: z
+    .string()
+    .min(1)
+    .refine((p) => !p.includes("..") && !p.includes("//"), "Path must not contain .. or //"),
   method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]).default("GET"),
   body: z.unknown().optional(),
-  baseUrl: z.string().url("baseUrl must be a valid URL").refine(
-    (url) => url.startsWith("http://") || url.startsWith("https://"),
-    "baseUrl must be HTTP(S)"
-  ),
+  baseUrl: z
+    .string()
+    .url("baseUrl must be a valid URL")
+    .refine(
+      (url) => url.startsWith("http://") || url.startsWith("https://"),
+      "baseUrl must be HTTP(S)"
+    ),
   accessToken: z.string().optional(),
 });
 
@@ -62,7 +65,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Proxy error:", error);
     return NextResponse.json(
-      { error: "Proxy request failed", message: error instanceof Error ? error.message : "Unknown error" },
+      {
+        error: "Proxy request failed",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }

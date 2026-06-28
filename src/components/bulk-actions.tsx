@@ -176,10 +176,10 @@ export function BulkActionsBar({
 
   return (
     <>
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-2 duration-200">
-        <div className="bg-background border rounded-xl shadow-2xl px-3 py-2 flex items-center gap-2">
+      <div className="animate-in fade-in slide-in-from-bottom-2 fixed bottom-4 left-1/2 z-40 -translate-x-1/2 duration-200">
+        <div className="bg-background flex items-center gap-2 rounded-xl border px-3 py-2 shadow-2xl">
           {/* Selection count */}
-          <div className="flex items-center gap-2 pl-2 pr-3 border-r">
+          <div className="flex items-center gap-2 border-r pr-3 pl-2">
             <CheckSquare className="h-4 w-4 text-amber-500" />
             <span className="text-sm font-medium">
               Выбрано: <span className="text-amber-600">{count}</span>
@@ -197,7 +197,12 @@ export function BulkActionsBar({
             <span className="hidden sm:inline">Дублировать</span>
           </Button>
 
-          <Button variant="ghost" size="sm" onClick={() => setTagDialogOpen(true)} className="gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTagDialogOpen(true)}
+            className="gap-1.5"
+          >
             <Tag className="h-4 w-4" />
             <span className="hidden sm:inline">Тег</span>
           </Button>
@@ -212,27 +217,27 @@ export function BulkActionsBar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
+              <DropdownMenuLabel className="text-muted-foreground text-xs">
                 Формат экспорта
               </DropdownMenuLabel>
               <DropdownMenuItem onClick={handleExportJSON}>
-                <FileJson className="h-4 w-4 mr-2" />
+                <FileJson className="mr-2 h-4 w-4" />
                 JSON (полная структура)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleExportCSV}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
                 CSV (только метаданные)
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <DropdownMenuSeparator className="h-6 mx-1" />
+          <DropdownMenuSeparator className="mx-1 h-6" />
 
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setConfirmDelete(true)}
-            className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-500/10"
+            className="gap-1.5 text-red-600 hover:bg-red-500/10 hover:text-red-700"
           >
             <Trash2 className="h-4 w-4" />
             <span className="hidden sm:inline">Удалить</span>
@@ -259,12 +264,12 @@ export function BulkActionsBar({
               Удалить выбранные дашборды?
             </DialogTitle>
             <DialogDescription>
-              Вы собираетесь удалить <strong>{count}</strong> дашборд(ов). Это действие
-              необратимо. Дашборды будут удалены только из локального состояния и
-              потребуют повторного удаления на сервере для полного стирания.
+              Вы собираетесь удалить <strong>{count}</strong> дашборд(ов). Это действие необратимо.
+              Дашборды будут удалены только из локального состояния и потребуют повторного удаления
+              на сервере для полного стирания.
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-32 overflow-auto rounded border bg-muted/30 p-2">
+          <div className="bg-muted/30 max-h-32 overflow-auto rounded border p-2">
             {selectedDashboards.map((d) => (
               <div key={d._id} className="flex items-center gap-2 py-0.5 text-xs">
                 <span className="h-1 w-1 rounded-full bg-red-500" />
@@ -277,7 +282,7 @@ export function BulkActionsBar({
               Отмена
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="mr-2 h-4 w-4" />
               Удалить {count}
             </Button>
           </DialogFooter>
@@ -293,8 +298,7 @@ export function BulkActionsBar({
               Добавить тег
             </DialogTitle>
             <DialogDescription>
-              Тег будет добавлен ко всем выбранным дашбордам ({count} шт.),
-              у которых его ещё нет.
+              Тег будет добавлен ко всем выбранным дашбордам ({count} шт.), у которых его ещё нет.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
@@ -306,7 +310,7 @@ export function BulkActionsBar({
                 if (e.key === "Enter") handleAddTag();
               }}
               placeholder="например: production, monitoring, sla"
-              className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+              className="bg-background w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
               autoFocus
             />
             <div className="flex flex-wrap gap-1.5">
@@ -314,7 +318,7 @@ export function BulkActionsBar({
                 <button
                   key={tag}
                   onClick={() => setTagInput(tag)}
-                  className="px-2 py-0.5 text-xs rounded-full border hover:bg-muted transition-colors"
+                  className="hover:bg-muted rounded-full border px-2 py-0.5 text-xs transition-colors"
                 >
                   {tag}
                 </button>
@@ -326,7 +330,7 @@ export function BulkActionsBar({
               Отмена
             </Button>
             <Button onClick={handleAddTag} disabled={!tagInput.trim()}>
-              <Tag className="h-4 w-4 mr-2" />
+              <Tag className="mr-2 h-4 w-4" />
               Добавить
             </Button>
           </DialogFooter>

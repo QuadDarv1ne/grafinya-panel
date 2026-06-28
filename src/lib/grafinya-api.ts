@@ -1,6 +1,6 @@
 /**
  * Графиня API Client
- * 
+ *
  * Full-featured client for the Graphinya monitoring platform REST API.
  * Handles JWT authentication, refresh tokens, and all major endpoints.
  */
@@ -200,10 +200,7 @@ export class GraphinyaClient {
   }
 
   // ---- Internal fetch ----
-  private async request<T>(
-    path: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.config.baseUrl}/api/v1${path}`;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -451,11 +448,7 @@ export class GraphinyaClient {
   }
 
   // ---- Proxy for modules ----
-  async moduleProxy(
-    moduleId: string,
-    path: string,
-    body?: unknown
-  ): Promise<unknown> {
+  async moduleProxy(moduleId: string, path: string, body?: unknown): Promise<unknown> {
     return this.request(`/modules/${moduleId}/proxy/${path}`, {
       method: body ? "POST" : "GET",
       body: body ? JSON.stringify(body) : undefined,

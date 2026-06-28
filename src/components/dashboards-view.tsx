@@ -45,10 +45,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardTemplates } from "@/components/dashboard-templates";
-import {
-  BulkActionsBar,
-  SelectionModeButton,
-} from "@/components/bulk-actions";
+import { BulkActionsBar, SelectionModeButton } from "@/components/bulk-actions";
 
 export function DashboardsView() {
   const {
@@ -132,7 +129,11 @@ export function DashboardsView() {
         toast({ title: "Дашборд создан", description: newTitle });
         fetchDashboards();
       } catch (err) {
-        toast({ title: "Ошибка", description: "Не удалось создать дашборд", variant: "destructive" });
+        toast({
+          title: "Ошибка",
+          description: "Не удалось создать дашборд",
+          variant: "destructive",
+        });
       }
     }
     setShowCreate(false);
@@ -245,8 +246,7 @@ export function DashboardsView() {
           <p className="text-muted-foreground">
             {isConnected
               ? `${dashboards.length} дашборд${dashboards.length === 1 ? "" : dashboards.length < 5 ? "а" : "ов"}`
-              : "Визуализация данных в реальном времени"
-            }
+              : "Визуализация данных в реальном времени"}
           </p>
         </div>
         {isConnected && (
@@ -259,18 +259,15 @@ export function DashboardsView() {
               }}
               count={selectedIds.size}
             />
-            <Button
-              variant="outline"
-              onClick={() => setShowTemplates(true)}
-            >
-              <LayoutTemplate className="h-4 w-4 mr-2" />
+            <Button variant="outline" onClick={() => setShowTemplates(true)}>
+              <LayoutTemplate className="mr-2 h-4 w-4" />
               Шаблоны
             </Button>
             <Button
               onClick={() => setShowCreate(true)}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
+              className="bg-amber-500 text-white hover:bg-amber-600"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Новый дашборд
             </Button>
           </div>
@@ -279,8 +276,8 @@ export function DashboardsView() {
 
       {/* Disconnected banner */}
       {!isConnected && (
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
-          <LayoutDashboard className="h-5 w-5 text-amber-500 shrink-0" />
+        <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+          <LayoutDashboard className="h-5 w-5 shrink-0 text-amber-500" />
           <p className="text-sm text-amber-600 dark:text-amber-400">
             Подключитесь к серверу или включите демо-режим для просмотра дашбордов.
           </p>
@@ -289,8 +286,8 @@ export function DashboardsView() {
 
       {/* Demo mode badge */}
       {isDemoMode && (
-        <div className="bg-violet-500/5 border border-violet-500/20 rounded-xl p-4 flex items-center gap-3">
-          <Sparkles className="h-5 w-5 text-violet-500 shrink-0" />
+        <div className="flex items-center gap-3 rounded-xl border border-violet-500/20 bg-violet-500/5 p-4">
+          <Sparkles className="h-5 w-5 shrink-0 text-violet-500" />
           <p className="text-sm text-violet-600 dark:text-violet-400">
             Демо-режим — данные сгенерированы для демонстрации возможностей
           </p>
@@ -300,7 +297,7 @@ export function DashboardsView() {
       {/* Search */}
       {isConnected && (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Поиск дашбордов..."
             value={search}
@@ -312,24 +309,24 @@ export function DashboardsView() {
 
       {/* Loading */}
       {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="h-4 bg-muted rounded w-3/4 mb-2" />
-                    <div className="h-3 bg-muted rounded w-1/2" />
+                    <div className="bg-muted mb-2 h-4 w-3/4 rounded" />
+                    <div className="bg-muted h-3 w-1/2 rounded" />
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="h-3 bg-muted rounded w-full" />
-                  <div className="h-3 bg-muted rounded w-2/3" />
-                  <div className="flex gap-2 mt-3">
-                    <div className="h-5 bg-muted rounded w-16" />
-                    <div className="h-5 bg-muted rounded w-12" />
+                  <div className="bg-muted h-3 w-full rounded" />
+                  <div className="bg-muted h-3 w-2/3 rounded" />
+                  <div className="mt-3 flex gap-2">
+                    <div className="bg-muted h-5 w-16 rounded" />
+                    <div className="bg-muted h-5 w-12 rounded" />
                   </div>
                 </div>
               </CardContent>
@@ -341,11 +338,11 @@ export function DashboardsView() {
       {/* Favorites */}
       {!isLoading && favorites.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-            <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+          <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
+            <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
             Избранные
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {favorites.map((dashboard) => (
               <DashboardCard
                 key={dashboard._id}
@@ -369,9 +366,7 @@ export function DashboardsView() {
       {!isLoading && regular.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              Все дашборды
-            </h3>
+            <h3 className="text-muted-foreground text-sm font-medium">Все дашборды</h3>
             {selectionMode && regular.length > 0 && (
               <Button
                 variant="ghost"
@@ -379,13 +374,11 @@ export function DashboardsView() {
                 className="text-xs"
                 onClick={() => toggleAll(regular.map((d) => d._id))}
               >
-                {regular.every((d) => selectedIds.has(d._id))
-                  ? "Снять выделение"
-                  : "Выбрать все"}
+                {regular.every((d) => selectedIds.has(d._id)) ? "Снять выделение" : "Выбрать все"}
               </Button>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {regular.map((dashboard) => (
               <DashboardCard
                 key={dashboard._id}
@@ -408,17 +401,17 @@ export function DashboardsView() {
       {/* Empty state */}
       {!isLoading && filtered.length === 0 && dashboards.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <LayoutDashboard className="h-12 w-12 text-muted-foreground/30 mb-4" />
+          <LayoutDashboard className="text-muted-foreground/30 mb-4 h-12 w-12" />
           <h3 className="text-lg font-semibold">Дашбордов пока нет</h3>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm">
             Создайте первый дашборд для начала работы
           </p>
           {isConnected && (
             <Button
               onClick={() => setShowCreate(true)}
-              className="mt-4 bg-amber-500 hover:bg-amber-600 text-white"
+              className="mt-4 bg-amber-500 text-white hover:bg-amber-600"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Новый дашборд
             </Button>
           )}
@@ -455,7 +448,7 @@ export function DashboardsView() {
             <Button
               onClick={handleCreate}
               disabled={!newTitle.trim()}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
+              className="bg-amber-500 text-white hover:bg-amber-600"
             >
               Создать
             </Button>
@@ -528,15 +521,17 @@ function DashboardCard({
 }) {
   return (
     <Card
-      className={`group hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer border-border/60 ${
-        selected ? "ring-2 ring-amber-500 border-amber-500/30" : ""
+      className={`group border-border/60 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-lg ${
+        selected ? "border-amber-500/30 ring-2 ring-amber-500" : ""
       }`}
-      onClick={selectionMode && onToggleSelection ? () => onToggleSelection(dashboard._id) : undefined}
+      onClick={
+        selectionMode && onToggleSelection ? () => onToggleSelection(dashboard._id) : undefined
+      }
     >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <CardTitle
-            className="text-base font-semibold line-clamp-1 flex-1 flex items-center gap-2"
+            className="line-clamp-1 flex flex-1 items-center gap-2 text-base font-semibold"
             onClick={selectionMode ? undefined : () => onOpen(dashboard._id)}
           >
             {selectionMode && (
@@ -557,9 +552,7 @@ function DashboardCard({
             >
               <Star
                 className={`h-3.5 w-3.5 ${
-                  dashboard.isFavorite
-                    ? "text-amber-500 fill-amber-500"
-                    : "text-muted-foreground"
+                  dashboard.isFavorite ? "fill-amber-500 text-amber-500" : "text-muted-foreground"
                 }`}
               />
             </Button>
@@ -582,7 +575,7 @@ function DashboardCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-destructive"
+              className="text-destructive h-7 w-7"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(dashboard._id);
@@ -596,23 +589,22 @@ function DashboardCard({
       </CardHeader>
       <CardContent onClick={() => onOpen(dashboard._id)}>
         {dashboard.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-            {dashboard.description}
-          </p>
+          <p className="text-muted-foreground mb-3 line-clamp-2 text-sm">{dashboard.description}</p>
         )}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
           <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
             {new Date(dashboard.updatedAt).toLocaleDateString("ru-RU")}
           </span>
           {dashboard.widgets && dashboard.widgets.length > 0 && (
             <Badge variant="secondary" className="text-xs">
-              {dashboard.widgets.length} виджет{dashboard.widgets.length === 1 ? "" : dashboard.widgets.length < 5 ? "а" : "ов"}
+              {dashboard.widgets.length} виджет
+              {dashboard.widgets.length === 1 ? "" : dashboard.widgets.length < 5 ? "а" : "ов"}
             </Badge>
           )}
           {dashboard.refreshTime && (
             <Badge variant="outline" className="text-xs">
-              <Clock className="h-2.5 w-2.5 mr-1" />
+              <Clock className="mr-1 h-2.5 w-2.5" />
               {(dashboard.refreshTime / 1000).toFixed(0)}с
             </Badge>
           )}
@@ -620,7 +612,7 @@ function DashboardCard({
             <div className="flex gap-1">
               {dashboard.tags.slice(0, 2).map((tag) => (
                 <Badge key={tag} variant="outline" className="text-xs">
-                  <Tag className="h-2.5 w-2.5 mr-1" />
+                  <Tag className="mr-1 h-2.5 w-2.5" />
                   {tag}
                 </Badge>
               ))}

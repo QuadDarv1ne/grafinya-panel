@@ -119,7 +119,8 @@ const TOUR_STEPS: TourStep[] = [
 ];
 
 export function OnboardingTour() {
-  const { onboardingCompleted, completeOnboarding, enableDemoMode, logActivity } = useGraphinyaStore();
+  const { onboardingCompleted, completeOnboarding, enableDemoMode, logActivity } =
+    useGraphinyaStore();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
 
@@ -170,20 +171,23 @@ export function OnboardingTour() {
   const isLast = step === TOUR_STEPS.length - 1;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => {
-      setOpen(v);
-      if (!v) handleSkip();
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) handleSkip();
+      }}
+    >
       <DialogContent className="max-w-md">
         <DialogHeader>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
                 {currentStep.icon}
               </div>
               <div>
                 <DialogTitle className="text-lg">{currentStep.title}</DialogTitle>
-                <DialogDescription className="text-xs mt-0.5">
+                <DialogDescription className="mt-0.5 text-xs">
                   Шаг {step + 1} из {TOUR_STEPS.length}
                 </DialogDescription>
               </div>
@@ -191,7 +195,7 @@ export function OnboardingTour() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 -mr-2 -mt-2"
+              className="-mt-2 -mr-2 h-7 w-7"
               onClick={handleSkip}
             >
               <X className="h-4 w-4" />
@@ -200,13 +204,11 @@ export function OnboardingTour() {
         </DialogHeader>
 
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {currentStep.description}
-          </p>
+          <p className="text-muted-foreground text-sm leading-relaxed">{currentStep.description}</p>
 
           {currentStep.highlight && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
+              <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
               <p className="text-xs text-amber-700 dark:text-amber-400">
                 <strong>Где найти:</strong> {currentStep.highlight}
               </p>
@@ -223,8 +225,8 @@ export function OnboardingTour() {
                   idx === step
                     ? "w-6 bg-amber-500"
                     : idx < step
-                    ? "w-1.5 bg-amber-500/50"
-                    : "w-1.5 bg-muted-foreground/30"
+                      ? "w-1.5 bg-amber-500/50"
+                      : "bg-muted-foreground/30 w-1.5"
                 }`}
                 aria-label={`Шаг ${idx + 1}`}
               />
@@ -237,14 +239,14 @@ export function OnboardingTour() {
             variant="ghost"
             size="sm"
             onClick={handleSkip}
-            className="text-xs text-muted-foreground"
+            className="text-muted-foreground text-xs"
           >
             Пропустить тур
           </Button>
           <div className="flex gap-2">
             {step > 0 && (
               <Button variant="outline" size="sm" onClick={handlePrev}>
-                <ChevronLeft className="h-4 w-4 mr-1" />
+                <ChevronLeft className="mr-1 h-4 w-4" />
                 Назад
               </Button>
             )}
@@ -258,18 +260,25 @@ export function OnboardingTour() {
                     handleFinish();
                   }}
                 >
-                  <Sparkles className="h-4 w-4 mr-1 text-violet-500" />
-                  В демо-режим
+                  <Sparkles className="mr-1 h-4 w-4 text-violet-500" />В демо-режим
                 </Button>
-                <Button size="sm" onClick={handleFinish} className="bg-amber-500 hover:bg-amber-600 text-white">
-                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                <Button
+                  size="sm"
+                  onClick={handleFinish}
+                  className="bg-amber-500 text-white hover:bg-amber-600"
+                >
+                  <CheckCircle2 className="mr-1 h-4 w-4" />
                   Начать работу
                 </Button>
               </>
             ) : (
-              <Button size="sm" onClick={handleNext} className="bg-amber-500 hover:bg-amber-600 text-white">
+              <Button
+                size="sm"
+                onClick={handleNext}
+                className="bg-amber-500 text-white hover:bg-amber-600"
+              >
                 Далее
-                <ChevronRight className="h-4 w-4 ml-1" />
+                <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             )}
           </div>

@@ -15,12 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Server,
   User,
@@ -51,9 +46,7 @@ export function ConnectionSetup() {
 
   const [open, setOpen] = useState(false);
   const [host, setHost] = useState(config.baseUrl.replace(/:\d+$/, "").replace(/^https?:\/\//, ""));
-  const [port, setPort] = useState(
-    config.baseUrl.match(/:(\d+)/)?.[1] || "5000"
-  );
+  const [port, setPort] = useState(config.baseUrl.match(/:(\d+)/)?.[1] || "5000");
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
@@ -86,7 +79,9 @@ export function ConnectionSetup() {
 
     try {
       // First test health
-      const healthResponse = await fetch(`${baseUrl}/healthz`, { signal: AbortSignal.timeout(8000) });
+      const healthResponse = await fetch(`${baseUrl}/healthz`, {
+        signal: AbortSignal.timeout(8000),
+      });
       if (!healthResponse.ok) {
         throw new Error("Сервер недоступен. Проверьте адрес и порт.");
       }
@@ -138,7 +133,10 @@ export function ConnectionSetup() {
   const handleDemoMode = () => {
     enableDemoMode();
     setOpen(false);
-    toast({ title: "Демо-режим активирован", description: "Данные сгенерированы для демонстрации" });
+    toast({
+      title: "Демо-режим активирован",
+      description: "Данные сгенерированы для демонстрации",
+    });
   };
 
   return (
@@ -146,16 +144,16 @@ export function ConnectionSetup() {
       {/* Connection status indicator */}
       <button
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+        className={`flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
           isConnected
-            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
+            ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400"
             : connectionStatus === "demo"
-            ? "bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20"
-            : connectionStatus === "connecting"
-            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-            : connectionStatus === "error"
-            ? "bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20"
-            : "bg-muted text-muted-foreground hover:bg-muted/80"
+              ? "bg-violet-500/10 text-violet-600 hover:bg-violet-500/20 dark:text-violet-400"
+              : connectionStatus === "connecting"
+                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                : connectionStatus === "error"
+                  ? "bg-red-500/10 text-red-600 hover:bg-red-500/20 dark:text-red-400"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
         }`}
       >
         {isConnected ? (
@@ -173,12 +171,12 @@ export function ConnectionSetup() {
           {isConnected
             ? "Подключено"
             : connectionStatus === "demo"
-            ? "Демо"
-            : connectionStatus === "connecting"
-            ? "Подключение..."
-            : connectionStatus === "error"
-            ? "Ошибка"
-            : "Не подключено"}
+              ? "Демо"
+              : connectionStatus === "connecting"
+                ? "Подключение..."
+                : connectionStatus === "error"
+                  ? "Ошибка"
+                  : "Не подключено"}
         </span>
       </button>
 
@@ -190,19 +188,19 @@ export function ConnectionSetup() {
               Подключение к Графине
             </DialogTitle>
             <DialogDescription>
-              Укажите адрес сервера Графини и учётные данные для входа,
-              или используйте демо-режим для ознакомления.
+              Укажите адрес сервера Графини и учётные данные для входа, или используйте демо-режим
+              для ознакомления.
             </DialogDescription>
           </DialogHeader>
 
           <Tabs defaultValue="connect" className="w-full">
             <TabsList className="w-full">
               <TabsTrigger value="connect" className="flex-1">
-                <Wifi className="h-3.5 w-3.5 mr-1.5" />
+                <Wifi className="mr-1.5 h-3.5 w-3.5" />
                 Подключение
               </TabsTrigger>
               <TabsTrigger value="demo" className="flex-1">
-                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                 Демо-режим
               </TabsTrigger>
             </TabsList>
@@ -215,13 +213,19 @@ export function ConnectionSetup() {
                   <Input
                     placeholder="192.168.0.1"
                     value={host}
-                    onChange={(e) => { setHost(e.target.value); setHealthStatus("unchecked"); }}
+                    onChange={(e) => {
+                      setHost(e.target.value);
+                      setHealthStatus("unchecked");
+                    }}
                     className="flex-1"
                   />
                   <Input
                     placeholder="5000"
                     value={port}
-                    onChange={(e) => { setPort(e.target.value); setHealthStatus("unchecked"); }}
+                    onChange={(e) => {
+                      setPort(e.target.value);
+                      setHealthStatus("unchecked");
+                    }}
                     className="w-24"
                   />
                   <Button
@@ -240,7 +244,7 @@ export function ConnectionSetup() {
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   IP или домен сервера Графини и порт backend API (по умолчанию 5000)
                 </p>
               </div>
@@ -250,7 +254,7 @@ export function ConnectionSetup() {
                 <Label className="text-sm font-medium">Учётные данные</Label>
                 <div className="space-y-2">
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <User className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                     <Input
                       placeholder="Логин"
                       value={username}
@@ -259,7 +263,7 @@ export function ConnectionSetup() {
                     />
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                     <Input
                       type="password"
                       placeholder="Пароль"
@@ -270,18 +274,19 @@ export function ConnectionSetup() {
                     />
                   </div>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-2.5 flex items-start gap-2">
-                  <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-muted-foreground">
-                    По умолчанию: <code className="font-mono bg-muted px-1 rounded">admin</code> / <code className="font-mono bg-muted px-1 rounded">123456</code>
+                <div className="bg-muted/50 flex items-start gap-2 rounded-lg p-2.5">
+                  <Info className="text-muted-foreground mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <p className="text-muted-foreground text-[11px]">
+                    По умолчанию: <code className="bg-muted rounded px-1 font-mono">admin</code> /{" "}
+                    <code className="bg-muted rounded px-1 font-mono">123456</code>
                   </p>
                 </div>
               </div>
 
               {/* Error message */}
               {error && (
-                <div className="bg-red-500/10 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg flex items-start gap-2">
-                  <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 rounded-lg bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">
+                  <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   {error}
                 </div>
               )}
@@ -295,16 +300,16 @@ export function ConnectionSetup() {
                 <Button
                   onClick={handleConnect}
                   disabled={isConnecting || !host || !username}
-                  className="bg-amber-500 hover:bg-amber-600 text-white"
+                  className="bg-amber-500 text-white hover:bg-amber-600"
                 >
                   {isConnecting ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Подключение...
                     </>
                   ) : (
                     <>
-                      <Wifi className="h-4 w-4 mr-2" />
+                      <Wifi className="mr-2 h-4 w-4" />
                       {isConnected ? "Переподключить" : "Подключить"}
                     </>
                   )}
@@ -313,18 +318,18 @@ export function ConnectionSetup() {
             </TabsContent>
 
             <TabsContent value="demo" className="space-y-4 pt-4">
-              <div className="bg-violet-500/5 border border-violet-500/20 rounded-xl p-6 text-center space-y-4">
-                <div className="h-14 w-14 rounded-full bg-violet-500/10 flex items-center justify-center mx-auto">
+              <div className="space-y-4 rounded-xl border border-violet-500/20 bg-violet-500/5 p-6 text-center">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-violet-500/10">
                   <Sparkles className="h-7 w-7 text-violet-500" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">Демо-режим</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Попробуйте все функции приложения без подключения к реальному серверу.
-                    Данные генерируются автоматически для демонстрации возможностей.
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Попробуйте все функции приложения без подключения к реальному серверу. Данные
+                    генерируются автоматически для демонстрации возможностей.
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2 justify-center">
+                <div className="flex flex-wrap justify-center gap-2">
                   <Badge variant="secondary">5 дашбордов</Badge>
                   <Badge variant="secondary">6 источников</Badge>
                   <Badge variant="secondary">8 плагинов</Badge>
@@ -333,9 +338,9 @@ export function ConnectionSetup() {
                 <Button
                   onClick={handleDemoMode}
                   size="lg"
-                  className="bg-violet-500 hover:bg-violet-600 text-white"
+                  className="bg-violet-500 text-white hover:bg-violet-600"
                 >
-                  <Sparkles className="h-5 w-5 mr-2" />
+                  <Sparkles className="mr-2 h-5 w-5" />
                   Включить демо-режим
                 </Button>
               </div>

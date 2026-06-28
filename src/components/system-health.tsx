@@ -261,8 +261,8 @@ export function SystemHealthWidget({ compact = false }: { compact?: boolean }) {
       <Card className="border-emerald-500/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
               Системный статус
             </CardTitle>
             <Badge variant="outline" className="text-xs">
@@ -272,15 +272,15 @@ export function SystemHealthWidget({ compact = false }: { compact?: boolean }) {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="text-center p-2 rounded bg-emerald-500/5">
+            <div className="rounded bg-emerald-500/5 p-2 text-center">
               <div className="text-lg font-bold text-emerald-500">{onlineCount}</div>
               <div className="text-muted-foreground">Онлайн</div>
             </div>
-            <div className="text-center p-2 rounded bg-amber-500/5">
+            <div className="rounded bg-amber-500/5 p-2 text-center">
               <div className="text-lg font-bold text-amber-500">{degradedCount}</div>
               <div className="text-muted-foreground">Деградация</div>
             </div>
-            <div className="text-center p-2 rounded bg-red-500/5">
+            <div className="rounded bg-red-500/5 p-2 text-center">
               <div className="text-lg font-bold text-red-500">{offlineCount}</div>
               <div className="text-muted-foreground">Офлайн</div>
             </div>
@@ -298,62 +298,70 @@ export function SystemHealthWidget({ compact = false }: { compact?: boolean }) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="h-3 w-3 animate-pulse rounded-full bg-emerald-500" />
                 Состояние системы
               </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-sm">
                 Обновлено: {new Date(lastUpdate).toLocaleTimeString("ru-RU")}
               </p>
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold text-emerald-500">{overallHealth}%</div>
-              <div className="text-xs text-muted-foreground">общая доступность</div>
+              <div className="text-muted-foreground text-xs">общая доступность</div>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <Progress value={overallHealth} className="h-2" />
-          <div className="grid grid-cols-3 gap-3 mt-3">
-            <div className="text-center p-2 rounded bg-background">
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            <div className="bg-background rounded p-2 text-center">
               <div className="text-xl font-bold text-emerald-500">{onlineCount}</div>
-              <div className="text-xs text-muted-foreground">Онлайн</div>
+              <div className="text-muted-foreground text-xs">Онлайн</div>
             </div>
-            <div className="text-center p-2 rounded bg-background">
+            <div className="bg-background rounded p-2 text-center">
               <div className="text-xl font-bold text-amber-500">{degradedCount}</div>
-              <div className="text-xs text-muted-foreground">Деградация</div>
+              <div className="text-muted-foreground text-xs">Деградация</div>
             </div>
-            <div className="text-center p-2 rounded bg-background">
+            <div className="bg-background rounded p-2 text-center">
               <div className="text-xl font-bold text-red-500">{offlineCount}</div>
-              <div className="text-xs text-muted-foreground">Офлайн</div>
+              <div className="text-muted-foreground text-xs">Офлайн</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.id} className="overflow-hidden">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground truncate">{stat.name}</p>
-                  <p className={`text-2xl font-bold mt-1 ${
-                    stat.status === "healthy" ? "text-foreground" :
-                    stat.status === "warning" ? "text-amber-500" :
-                    "text-red-500"
-                  }`}>
+                <div className="min-w-0 flex-1">
+                  <p className="text-muted-foreground truncate text-xs">{stat.name}</p>
+                  <p
+                    className={`mt-1 text-2xl font-bold ${
+                      stat.status === "healthy"
+                        ? "text-foreground"
+                        : stat.status === "warning"
+                          ? "text-amber-500"
+                          : "text-red-500"
+                    }`}
+                  >
                     {stat.value}
                   </p>
                   {stat.detail && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{stat.detail}</p>
+                    <p className="text-muted-foreground mt-0.5 text-[10px]">{stat.detail}</p>
                   )}
                 </div>
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-                  stat.status === "healthy" ? "bg-emerald-500/10 text-emerald-500" :
-                  stat.status === "warning" ? "bg-amber-500/10 text-amber-500" :
-                  "bg-red-500/10 text-red-500"
-                }`}>
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                    stat.status === "healthy"
+                      ? "bg-emerald-500/10 text-emerald-500"
+                      : stat.status === "warning"
+                        ? "bg-amber-500/10 text-amber-500"
+                        : "bg-red-500/10 text-red-500"
+                  }`}
+                >
                   {stat.id === "cpu" && <Cpu className="h-4 w-4" />}
                   {stat.id === "memory" && <MemoryStick className="h-4 w-4" />}
                   {stat.id === "disk" && <HardDrive className="h-4 w-4" />}
@@ -361,19 +369,23 @@ export function SystemHealthWidget({ compact = false }: { compact?: boolean }) {
                 </div>
               </div>
               {stat.trend && stat.trendValue && (
-                <div className="flex items-center gap-1 mt-2 text-xs">
+                <div className="mt-2 flex items-center gap-1 text-xs">
                   {stat.trend === "up" ? (
                     <TrendingUp className="h-3 w-3 text-amber-500" />
                   ) : stat.trend === "down" ? (
                     <TrendingDown className="h-3 w-3 text-emerald-500" />
                   ) : (
-                    <Activity className="h-3 w-3 text-muted-foreground" />
+                    <Activity className="text-muted-foreground h-3 w-3" />
                   )}
-                  <span className={`${
-                    stat.trend === "up" ? "text-amber-500" :
-                    stat.trend === "down" ? "text-emerald-500" :
-                    "text-muted-foreground"
-                  }`}>
+                  <span
+                    className={`${
+                      stat.trend === "up"
+                        ? "text-amber-500"
+                        : stat.trend === "down"
+                          ? "text-emerald-500"
+                          : "text-muted-foreground"
+                    }`}
+                  >
                     {stat.trendValue}
                   </span>
                   <span className="text-muted-foreground">за 5 мин</span>
@@ -388,12 +400,12 @@ export function SystemHealthWidget({ compact = false }: { compact?: boolean }) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Server className="h-4 w-4 text-amber-500" />
               Сервисы и плагины
             </CardTitle>
             <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={handleRefresh}>
-              <RefreshCw className="h-3 w-3 mr-1" />
+              <RefreshCw className="mr-1 h-3 w-3" />
               Обновить
             </Button>
           </div>
@@ -403,34 +415,40 @@ export function SystemHealthWidget({ compact = false }: { compact?: boolean }) {
             {SERVICES.map((service) => (
               <div
                 key={service.id}
-                className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors"
+                className="hover:bg-muted/30 flex items-center gap-3 rounded-lg border p-3 transition-colors"
               >
-                <div className={`h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 ${service.color}`}>
+                <div
+                  className={`bg-muted flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${service.color}`}
+                >
                   {service.icon}
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm truncate">{service.name}</span>
-                    <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">
+                    <span className="truncate text-sm font-medium">{service.name}</span>
+                    <Badge variant="outline" className="h-4 shrink-0 px-1 text-[10px]">
                       :{service.port}
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  <p className="text-muted-foreground mt-0.5 truncate text-xs">
                     {service.description}
                   </p>
                 </div>
-                <div className="flex items-center gap-4 shrink-0">
-                  <div className="text-right hidden sm:block">
-                    <div className="text-xs text-muted-foreground">Uptime</div>
-                    <div className="text-xs font-mono">{service.uptime}</div>
+                <div className="flex shrink-0 items-center gap-4">
+                  <div className="hidden text-right sm:block">
+                    <div className="text-muted-foreground text-xs">Uptime</div>
+                    <div className="font-mono text-xs">{service.uptime}</div>
                   </div>
-                  <div className="text-right hidden md:block">
-                    <div className="text-xs text-muted-foreground">Задержка</div>
-                    <div className={`text-xs font-mono ${
-                      service.latency > 200 ? "text-red-500" :
-                      service.latency > 100 ? "text-amber-500" :
-                      "text-emerald-500"
-                    }`}>
+                  <div className="hidden text-right md:block">
+                    <div className="text-muted-foreground text-xs">Задержка</div>
+                    <div
+                      className={`font-mono text-xs ${
+                        service.latency > 200
+                          ? "text-red-500"
+                          : service.latency > 100
+                            ? "text-amber-500"
+                            : "text-emerald-500"
+                      }`}
+                    >
                       {service.latency > 0 ? `${service.latency} мс` : "—"}
                     </div>
                   </div>
@@ -440,23 +458,23 @@ export function SystemHealthWidget({ compact = false }: { compact?: boolean }) {
                       service.status === "online"
                         ? "border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
                         : service.status === "degraded"
-                        ? "border-amber-500/30 text-amber-600 dark:text-amber-400"
-                        : "border-red-500/30 text-red-600 dark:text-red-400"
+                          ? "border-amber-500/30 text-amber-600 dark:text-amber-400"
+                          : "border-red-500/30 text-red-600 dark:text-red-400"
                     }`}
                   >
                     {service.status === "online" ? (
                       <>
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        <CheckCircle2 className="mr-1 h-3 w-3" />
                         Онлайн
                       </>
                     ) : service.status === "degraded" ? (
                       <>
-                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        <AlertTriangle className="mr-1 h-3 w-3" />
                         Деградация
                       </>
                     ) : (
                       <>
-                        <AlertCircle className="h-3 w-3 mr-1" />
+                        <AlertCircle className="mr-1 h-3 w-3" />
                         Офлайн
                       </>
                     )}

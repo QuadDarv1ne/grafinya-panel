@@ -30,9 +30,7 @@ export function toCSV(rows: ExportableRow[], delimiter = ","): string {
   };
 
   const headerLine = headers.map(escapeValue).join(delimiter);
-  const dataLines = rows.map((row) =>
-    headers.map((h) => escapeValue(row[h])).join(delimiter)
-  );
+  const dataLines = rows.map((row) => headers.map((h) => escapeValue(row[h])).join(delimiter));
 
   return [headerLine, ...dataLines].join("\n");
 }
@@ -59,7 +57,11 @@ export function exportCSV(rows: ExportableRow[], filename: string) {
   const csv = toCSV(rows);
   // Add BOM for Excel UTF-8 compatibility
   const csvWithBom = "\uFEFF" + csv;
-  downloadFile(csvWithBom, filename.endsWith(".csv") ? filename : `${filename}.csv`, "text/csv;charset=utf-8");
+  downloadFile(
+    csvWithBom,
+    filename.endsWith(".csv") ? filename : `${filename}.csv`,
+    "text/csv;charset=utf-8"
+  );
 }
 
 /**
@@ -67,7 +69,11 @@ export function exportCSV(rows: ExportableRow[], filename: string) {
  */
 export function exportJSON(data: unknown, filename: string) {
   const json = JSON.stringify(data, null, 2);
-  downloadFile(json, filename.endsWith(".json") ? filename : `${filename}.json`, "application/json");
+  downloadFile(
+    json,
+    filename.endsWith(".json") ? filename : `${filename}.json`,
+    "application/json"
+  );
 }
 
 /**

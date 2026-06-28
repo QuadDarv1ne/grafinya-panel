@@ -28,7 +28,7 @@ export function LanguageSwitcher() {
           onClick={() => setLanguage(lang.code)}
           title={lang.code === "ru" ? "Русский" : "English"}
         >
-          <Globe className="h-3 w-3 mr-1" />
+          <Globe className="mr-1 h-3 w-3" />
           {lang.label}
         </Button>
       ))}

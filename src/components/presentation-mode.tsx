@@ -110,9 +110,11 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
   useEffect(() => {
     const el = document.documentElement;
     if (el.requestFullscreen && !document.fullscreenElement) {
-      el.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {
-        /* user may have denied fullscreen; component still works in window */
-      });
+      el.requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch(() => {
+          /* user may have denied fullscreen; component still works in window */
+        });
     }
     return () => {
       if (document.fullscreenElement && document.exitFullscreen) {
@@ -161,9 +163,13 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
 
   const toggleFullscreen = useCallback(() => {
     if (document.fullscreenElement) {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      document
+        .exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch(() => {});
     } else {
-      document.documentElement.requestFullscreen()
+      document.documentElement
+        .requestFullscreen()
         .then(() => setIsFullscreen(true))
         .catch(() => {});
     }
@@ -261,8 +267,8 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
 
   if (!activeDashboard) {
     return (
-      <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center">
-        <div className="text-center space-y-3">
+      <div className="bg-background fixed inset-0 z-[100] flex items-center justify-center">
+        <div className="space-y-3 text-center">
           <p className="text-muted-foreground">Дашборд не найден</p>
           <Button onClick={onExit}>Выйти</Button>
         </div>
@@ -272,7 +278,7 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
 
   return (
     <div
-      className={`fixed inset-0 z-[100] bg-background flex flex-col ${
+      className={`bg-background fixed inset-0 z-[100] flex flex-col ${
         showControls ? "cursor-default" : "cursor-none"
       }`}
     >
@@ -282,20 +288,18 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
       {/* Header (auto-hides) */}
       <div
         className={`relative z-10 transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+          showControls ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
         <div className="flex items-center justify-between px-8 py-5">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg">
               <LayoutDashboard className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold leading-tight">
-                {activeDashboard.title}
-              </h1>
+              <h1 className="text-2xl leading-tight font-bold">{activeDashboard.title}</h1>
               {activeDashboard.description && (
-                <p className="text-sm text-muted-foreground mt-0.5">
+                <p className="text-muted-foreground mt-0.5 text-sm">
                   {activeDashboard.description}
                 </p>
               )}
@@ -304,22 +308,20 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
           <div className="flex items-center gap-2">
             {isPaused && (
               <Badge variant="outline" className="border-amber-500/40 text-amber-600">
-                <Pause className="h-3 w-3 mr-1" /> Пауза
+                <Pause className="mr-1 h-3 w-3" /> Пауза
               </Badge>
             )}
             <Badge variant="outline" className="text-xs">
-              <Clock className="h-3 w-3 mr-1" />
+              <Clock className="mr-1 h-3 w-3" />
               {timeRange}
             </Badge>
-            {isDemoMode && (
-              <Badge className="bg-violet-500/10 text-violet-600 text-xs">Демо</Badge>
-            )}
+            {isDemoMode && <Badge className="bg-violet-500/10 text-xs text-violet-600">Демо</Badge>}
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 relative overflow-hidden px-8 pb-8">
+      <div className="relative flex-1 overflow-hidden px-8 pb-8">
         {activeWidget ? (
           <PresentationWidget
             key={`${activeDashboard._id}-${activeWidget.id}-${refreshCounter}`}
@@ -330,19 +332,17 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
             performQuery={performQuery}
           />
         ) : (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center space-y-2">
-              <Table2 className="h-12 w-12 mx-auto text-muted-foreground/50" />
-              <p className="text-muted-foreground">
-                В дашборде нет виджетов
-              </p>
+          <div className="flex h-full items-center justify-center">
+            <div className="space-y-2 text-center">
+              <Table2 className="text-muted-foreground/50 mx-auto h-12 w-12" />
+              <p className="text-muted-foreground">В дашборде нет виджетов</p>
             </div>
           </div>
         )}
 
         {/* Widget pager indicator */}
         {activeWidgets.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5">
             {activeWidgets.map((w, i) => (
               <button
                 key={w.id}
@@ -350,7 +350,7 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
                 className={`h-1.5 rounded-full transition-all ${
                   i === activeWidgetIndex
                     ? "w-8 bg-amber-500"
-                    : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50 w-1.5"
                 }`}
                 aria-label={`Виджет ${i + 1}`}
               />
@@ -362,31 +362,53 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
       {/* Bottom control bar (auto-hides) */}
       <div
         className={`relative z-10 transition-all duration-300 ${
-          showControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+          showControls ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
         }`}
       >
-        <div className="px-8 py-4 flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 px-8 py-4">
           {/* Left: navigation */}
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={prevDashboard} disabled={dashboards.length <= 1}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={prevDashboard}
+              disabled={dashboards.length <= 1}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-xs text-muted-foreground min-w-[80px] text-center">
-              Дашборд {dashboards.findIndex((d) => d._id === activeDashboardId) + 1} / {dashboards.length}
+            <span className="text-muted-foreground min-w-[80px] text-center text-xs">
+              Дашборд {dashboards.findIndex((d) => d._id === activeDashboardId) + 1} /{" "}
+              {dashboards.length}
             </span>
-            <Button variant="outline" size="icon" onClick={nextDashboard} disabled={dashboards.length <= 1}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={nextDashboard}
+              disabled={dashboards.length <= 1}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
 
-            <div className="w-px h-6 bg-border mx-2" />
+            <div className="bg-border mx-2 h-6 w-px" />
 
-            <Button variant="outline" size="icon" onClick={prevWidget} disabled={activeWidgets.length <= 1}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={prevWidget}
+              disabled={activeWidgets.length <= 1}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-xs text-muted-foreground min-w-[80px] text-center">
-              Виджет {Math.min(activeWidgetIndex + 1, activeWidgets.length)} / {activeWidgets.length}
+            <span className="text-muted-foreground min-w-[80px] text-center text-xs">
+              Виджет {Math.min(activeWidgetIndex + 1, activeWidgets.length)} /{" "}
+              {activeWidgets.length}
             </span>
-            <Button variant="outline" size="icon" onClick={nextWidget} disabled={activeWidgets.length <= 1}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={nextWidget}
+              disabled={activeWidgets.length <= 1}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -394,7 +416,7 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
           {/* Center: rotation / refresh controls */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <span className="text-muted-foreground flex items-center gap-1 text-xs">
                 <Activity className="h-3 w-3" /> Смена:
               </span>
               <Select value={String(rotationSec)} onValueChange={(v) => setRotationSec(Number(v))}>
@@ -412,7 +434,7 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <span className="text-muted-foreground flex items-center gap-1 text-xs">
                 <RefreshCw className="h-3 w-3" /> Обновление:
               </span>
               <Select value={String(refreshSec)} onValueChange={(v) => setRefreshSec(Number(v))}>
@@ -449,7 +471,7 @@ export function PresentationMode({ dashboardId, onExit }: PresentationModeProps)
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </Button>
             <Button variant="destructive" size="sm" onClick={onExit}>
-              <X className="h-4 w-4 mr-1" /> Выход
+              <X className="mr-1 h-4 w-4" /> Выход
             </Button>
           </div>
         </div>
@@ -512,7 +534,7 @@ function PresentationWidget({
         if (!cancelled) {
           const rows = Array.isArray(result)
             ? result
-            : (result as { data?: unknown[] })?.data ?? [];
+            : ((result as { data?: unknown[] })?.data ?? []);
           setData(rows as unknown[]);
         }
       } catch {
@@ -534,17 +556,17 @@ function PresentationWidget({
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="h-12 w-12 rounded-full border-4 border-amber-500/30 border-t-amber-500 animate-spin mx-auto" />
-          <p className="text-sm text-muted-foreground">Загрузка данных…</p>
+      <div className="flex h-full items-center justify-center">
+        <div className="space-y-3 text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-amber-500/30 border-t-amber-500" />
+          <p className="text-muted-foreground text-sm">Загрузка данных…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       <div className="mb-3 flex items-center gap-2">
         {widget.type === "line" && <TrendingUp className="h-5 w-5 text-amber-500" />}
         {widget.type === "bar" && <BarChart3 className="h-5 w-5 text-amber-500" />}
@@ -552,7 +574,7 @@ function PresentationWidget({
         {widget.type === "table" && <Table2 className="h-5 w-5 text-amber-500" />}
         <h2 className="text-xl font-semibold">{widgetTitle}</h2>
       </div>
-      <div className="flex-1 min-h-0">
+      <div className="min-h-0 flex-1">
         <ResponsiveContainer width="100%" height="100%">
           {renderChartByType(widget.type, data, palette)}
         </ResponsiveContainer>
@@ -587,7 +609,12 @@ function renderChartByType(
           ))}
         </Pie>
         <Tooltip
-          contentStyle={{ background: "rgba(15, 23, 42, 0.95)", border: "none", borderRadius: 8, color: "#fff" }}
+          contentStyle={{
+            background: "rgba(15, 23, 42, 0.95)",
+            border: "none",
+            borderRadius: 8,
+            color: "#fff",
+          }}
         />
         <Legend wrapperStyle={{ fontSize: 14 }} />
       </PieChart>
@@ -601,7 +628,12 @@ function renderChartByType(
         <XAxis dataKey="name" tick={{ fontSize: 13 }} />
         <YAxis tick={{ fontSize: 13 }} />
         <Tooltip
-          contentStyle={{ background: "rgba(15, 23, 42, 0.95)", border: "none", borderRadius: 8, color: "#fff" }}
+          contentStyle={{
+            background: "rgba(15, 23, 42, 0.95)",
+            border: "none",
+            borderRadius: 8,
+            color: "#fff",
+          }}
         />
         <Bar dataKey="value" fill={palette.primary} radius={[8, 8, 0, 0]} />
       </BarChart>
@@ -611,12 +643,15 @@ function renderChartByType(
   if (type === "table") {
     const columns = safeData.length > 0 ? Object.keys(safeData[0]) : [];
     return (
-      <div className="overflow-auto max-h-full">
+      <div className="max-h-full overflow-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/10">
               {columns.map((col) => (
-                <th key={col} className="px-3 py-2 text-left font-medium text-muted-foreground uppercase tracking-wider text-xs">
+                <th
+                  key={col}
+                  className="text-muted-foreground px-3 py-2 text-left text-xs font-medium tracking-wider uppercase"
+                >
                   {col}
                 </th>
               ))}
@@ -624,7 +659,7 @@ function renderChartByType(
           </thead>
           <tbody>
             {safeData.map((row, i) => (
-              <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+              <tr key={i} className="border-b border-white/5 transition-colors hover:bg-white/5">
                 {columns.map((col) => (
                   <td key={col} className="px-3 py-2">
                     {String(row[col] ?? "")}
@@ -651,7 +686,12 @@ function renderChartByType(
       <XAxis dataKey="name" tick={{ fontSize: 13 }} />
       <YAxis tick={{ fontSize: 13 }} />
       <Tooltip
-        contentStyle={{ background: "rgba(15, 23, 42, 0.95)", border: "none", borderRadius: 8, color: "#fff" }}
+        contentStyle={{
+          background: "rgba(15, 23, 42, 0.95)",
+          border: "none",
+          borderRadius: 8,
+          color: "#fff",
+        }}
       />
       <Area
         type="monotone"
@@ -676,4 +716,3 @@ function generateDemoData(widget: Widget): unknown[] {
   }
   return generateTimeSeriesData(12);
 }
-

@@ -27,7 +27,9 @@ beforeEach(() => {
 describe("Graphinya Store", () => {
   describe("Connection", () => {
     it("sets config", () => {
-      useGraphinyaStore.getState().setConfig({ baseUrl: "http://localhost:8000", frontendUrl: "http://localhost:3000" });
+      useGraphinyaStore
+        .getState()
+        .setConfig({ baseUrl: "http://localhost:8000", frontendUrl: "http://localhost:3000" });
       expect(useGraphinyaStore.getState().config.baseUrl).toBe("http://localhost:8000");
     });
 
@@ -67,13 +69,23 @@ describe("Graphinya Store", () => {
     });
 
     it("sets current user", () => {
-      useGraphinyaStore.getState().setCurrentUser({ id: "1", username: "admin", email: "a@b.com", role: "admin", isActive: true });
+      useGraphinyaStore
+        .getState()
+        .setCurrentUser({
+          id: "1",
+          username: "admin",
+          email: "a@b.com",
+          role: "admin",
+          isActive: true,
+        });
       expect(useGraphinyaStore.getState().currentUser?.username).toBe("admin");
     });
 
     it("logout clears auth and data", () => {
       useGraphinyaStore.getState().setTokens({ accessToken: "at1", refreshToken: "rt1" });
-      useGraphinyaStore.getState().setDashboards([{ _id: "1", title: "Test", createdAt: "", updatedAt: "" }]);
+      useGraphinyaStore
+        .getState()
+        .setDashboards([{ _id: "1", title: "Test", createdAt: "", updatedAt: "" }]);
       useGraphinyaStore.getState().logout();
       const state = useGraphinyaStore.getState();
       expect(state.tokens).toBeNull();
@@ -112,7 +124,18 @@ describe("Graphinya Store", () => {
     });
 
     it("sets data sources", () => {
-      useGraphinyaStore.getState().setDataSources([{ _id: "ds1", name: "PG", pluginId: "postgres", fields: [], createdAt: "", updatedAt: "" }]);
+      useGraphinyaStore
+        .getState()
+        .setDataSources([
+          {
+            _id: "ds1",
+            name: "PG",
+            pluginId: "postgres",
+            fields: [],
+            createdAt: "",
+            updatedAt: "",
+          },
+        ]);
       expect(useGraphinyaStore.getState().dataSources).toHaveLength(1);
     });
 
@@ -124,9 +147,18 @@ describe("Graphinya Store", () => {
 
   describe("Dashboard mutations", () => {
     beforeEach(() => {
-      useGraphinyaStore.getState().setDashboards([
-        { _id: "d1", title: "Dash1", widgets: [], isFavorite: false, createdAt: "", updatedAt: "" },
-      ]);
+      useGraphinyaStore
+        .getState()
+        .setDashboards([
+          {
+            _id: "d1",
+            title: "Dash1",
+            widgets: [],
+            isFavorite: false,
+            createdAt: "",
+            updatedAt: "",
+          },
+        ]);
     });
 
     it("updates dashboard", () => {
@@ -149,14 +181,20 @@ describe("Graphinya Store", () => {
     });
 
     it("removes widget from dashboard", () => {
-      useGraphinyaStore.getState().addWidgetToDashboard("d1", { id: "w1", title: "W1", type: "graph" });
+      useGraphinyaStore
+        .getState()
+        .addWidgetToDashboard("d1", { id: "w1", title: "W1", type: "graph" });
       useGraphinyaStore.getState().removeWidgetFromDashboard("d1", "w1");
       expect(useGraphinyaStore.getState().dashboards[0].widgets).toHaveLength(0);
     });
 
     it("reorders widgets", () => {
-      useGraphinyaStore.getState().addWidgetToDashboard("d1", { id: "w1", title: "W1", type: "graph" });
-      useGraphinyaStore.getState().addWidgetToDashboard("d1", { id: "w2", title: "W2", type: "table" });
+      useGraphinyaStore
+        .getState()
+        .addWidgetToDashboard("d1", { id: "w1", title: "W1", type: "graph" });
+      useGraphinyaStore
+        .getState()
+        .addWidgetToDashboard("d1", { id: "w2", title: "W2", type: "table" });
       useGraphinyaStore.getState().reorderWidgetsInDashboard("d1", ["w2", "w1"]);
       const widgets = useGraphinyaStore.getState().dashboards[0].widgets!;
       expect(widgets[0].id).toBe("w2");
@@ -191,14 +229,18 @@ describe("Graphinya Store", () => {
 
     it("deduplicates recent items", () => {
       useGraphinyaStore.getState().addRecentItem({ id: "d1", type: "dashboard", title: "Dash1" });
-      useGraphinyaStore.getState().addRecentItem({ id: "d1", type: "dashboard", title: "Dash1 Updated" });
+      useGraphinyaStore
+        .getState()
+        .addRecentItem({ id: "d1", type: "dashboard", title: "Dash1 Updated" });
       expect(useGraphinyaStore.getState().recentItems).toHaveLength(1);
       expect(useGraphinyaStore.getState().recentItems[0].title).toBe("Dash1 Updated");
     });
 
     it("caps recent items at 10", () => {
       for (let i = 0; i < 15; i++) {
-        useGraphinyaStore.getState().addRecentItem({ id: `d${i}`, type: "dashboard", title: `Dash${i}` });
+        useGraphinyaStore
+          .getState()
+          .addRecentItem({ id: `d${i}`, type: "dashboard", title: `Dash${i}` });
       }
       expect(useGraphinyaStore.getState().recentItems.length).toBeLessThanOrEqual(10);
     });

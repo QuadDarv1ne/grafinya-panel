@@ -21,18 +21,38 @@ import {
 import { useState, useMemo } from "react";
 
 const categoryConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
-  navigation: { icon: <Navigation className="h-3.5 w-3.5" />, color: "text-blue-500", label: "Навигация" },
-  dashboard: { icon: <LayoutDashboard className="h-3.5 w-3.5" />, color: "text-amber-500", label: "Дашборд" },
-  datasource: { icon: <Database className="h-3.5 w-3.5" />, color: "text-emerald-500", label: "Источник" },
+  navigation: {
+    icon: <Navigation className="h-3.5 w-3.5" />,
+    color: "text-blue-500",
+    label: "Навигация",
+  },
+  dashboard: {
+    icon: <LayoutDashboard className="h-3.5 w-3.5" />,
+    color: "text-amber-500",
+    label: "Дашборд",
+  },
+  datasource: {
+    icon: <Database className="h-3.5 w-3.5" />,
+    color: "text-emerald-500",
+    label: "Источник",
+  },
   plugin: { icon: <Plug className="h-3.5 w-3.5" />, color: "text-purple-500", label: "Плагин" },
   module: { icon: <Blocks className="h-3.5 w-3.5" />, color: "text-cyan-500", label: "Модуль" },
   auth: { icon: <Shield className="h-3.5 w-3.5" />, color: "text-red-500", label: "Авторизация" },
-  system: { icon: <Server className="h-3.5 w-3.5" />, color: "text-muted-foreground", label: "Система" },
+  system: {
+    icon: <Server className="h-3.5 w-3.5" />,
+    color: "text-muted-foreground",
+    label: "Система",
+  },
 };
 
 function formatTime(ts: number): string {
   const date = new Date(ts);
-  return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  return date.toLocaleTimeString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 
 function formatDate(ts: number): string {
@@ -45,7 +65,13 @@ function formatDate(ts: number): string {
   return date.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
 }
 
-export function ActivityLog({ limit, showFilters = false }: { limit?: number; showFilters?: boolean }) {
+export function ActivityLog({
+  limit,
+  showFilters = false,
+}: {
+  limit?: number;
+  showFilters?: boolean;
+}) {
   const { activityLog, clearActivityLog } = useGraphinyaStore();
   const [filter, setFilter] = useState<string | null>(null);
 
@@ -69,16 +95,16 @@ export function ActivityLog({ limit, showFilters = false }: { limit?: number; sh
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-base">
             <Activity className="h-4 w-4 text-amber-500" />
             Журнал активности
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Activity className="h-10 w-10 text-muted-foreground/30 mb-3" />
-            <p className="text-sm text-muted-foreground">Журнал пуст</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">
+            <Activity className="text-muted-foreground/30 mb-3 h-10 w-10" />
+            <p className="text-muted-foreground text-sm">Журнал пуст</p>
+            <p className="text-muted-foreground/70 mt-1 text-xs">
               Ваши действия будут отображаться здесь
             </p>
           </div>
@@ -91,30 +117,30 @@ export function ActivityLog({ limit, showFilters = false }: { limit?: number; sh
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-base">
             <Activity className="h-4 w-4 text-amber-500" />
             Журнал активности
-            <Badge variant="secondary" className="text-[10px] ml-1">
+            <Badge variant="secondary" className="ml-1 text-[10px]">
               {filtered.length}
             </Badge>
           </CardTitle>
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+            className="text-muted-foreground hover:text-destructive h-7 text-xs"
             onClick={clearActivityLog}
           >
-            <Trash2 className="h-3 w-3 mr-1" />
+            <Trash2 className="mr-1 h-3 w-3" />
             Очистить
           </Button>
         </div>
         {showFilters && (
-          <div className="flex items-center gap-1 flex-wrap mt-2">
-            <Filter className="h-3 w-3 text-muted-foreground" />
+          <div className="mt-2 flex flex-wrap items-center gap-1">
+            <Filter className="text-muted-foreground h-3 w-3" />
             <Button
               variant={filter === null ? "secondary" : "ghost"}
               size="sm"
-              className="h-6 text-[10px] px-2"
+              className="h-6 px-2 text-[10px]"
               onClick={() => setFilter(null)}
             >
               Все
@@ -127,12 +153,12 @@ export function ActivityLog({ limit, showFilters = false }: { limit?: number; sh
                   key={key}
                   variant={filter === key ? "secondary" : "ghost"}
                   size="sm"
-                  className="h-6 text-[10px] px-2"
+                  className="h-6 px-2 text-[10px]"
                   onClick={() => setFilter(filter === key ? null : key)}
                 >
                   <span className={cfg.color}>{cfg.icon}</span>
                   <span className="ml-1">{cfg.label}</span>
-                  <span className="ml-1 text-muted-foreground">{count}</span>
+                  <span className="text-muted-foreground ml-1">{count}</span>
                 </Button>
               );
             })}
@@ -144,8 +170,8 @@ export function ActivityLog({ limit, showFilters = false }: { limit?: number; sh
           <div className="space-y-4">
             {grouped.map(([dateLabel, entries]) => (
               <div key={dateLabel}>
-                <div className="sticky top-0 bg-background/80 backdrop-blur py-1 z-10">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="bg-background/80 sticky top-0 z-10 py-1 backdrop-blur">
+                  <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                     {dateLabel}
                   </p>
                 </div>
@@ -156,25 +182,25 @@ export function ActivityLog({ limit, showFilters = false }: { limit?: number; sh
                     return (
                       <div
                         key={entry.id}
-                        className="flex items-start gap-3 p-2 rounded-md hover:bg-muted/40 transition-colors"
+                        className="hover:bg-muted/40 flex items-start gap-3 rounded-md p-2 transition-colors"
                       >
                         <div className={`mt-0.5 ${cfg.color}`}>{cfg.icon}</div>
-                        <div className="flex-1 min-w-0">
+                        <div className="min-w-0 flex-1">
                           <div className="flex items-baseline justify-between gap-2">
-                            <p className="text-sm font-medium text-foreground truncate">
+                            <p className="text-foreground truncate text-sm font-medium">
                               {entry.action}
                             </p>
-                            <span className="text-[10px] text-muted-foreground shrink-0 font-mono">
+                            <span className="text-muted-foreground shrink-0 font-mono text-[10px]">
                               {formatTime(entry.timestamp)}
                             </span>
                           </div>
                           {entry.details && (
-                            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                            <p className="text-muted-foreground mt-0.5 truncate text-xs">
                               {entry.details}
                             </p>
                           )}
                           {entry.targetType && (
-                            <Badge variant="outline" className="text-[9px] h-4 px-1 mt-1">
+                            <Badge variant="outline" className="mt-1 h-4 px-1 text-[9px]">
                               {entry.targetType}
                             </Badge>
                           )}

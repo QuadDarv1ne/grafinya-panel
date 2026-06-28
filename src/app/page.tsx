@@ -21,16 +21,22 @@ import { AppSidebar, MobileSidebar } from "@/components/app-sidebar";
 import { ShortcutsDialog } from "@/components/shortcuts-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const ExplorerView = lazy(() => import("@/components/explorer-view").then(m => ({ default: m.ExplorerView })));
-const ConstructorView = lazy(() => import("@/components/constructor-view").then(m => ({ default: m.ConstructorView })));
-const ActivityLog = lazy(() => import("@/components/activity-log").then(m => ({ default: m.ActivityLog })));
+const ExplorerView = lazy(() =>
+  import("@/components/explorer-view").then((m) => ({ default: m.ExplorerView }))
+);
+const ConstructorView = lazy(() =>
+  import("@/components/constructor-view").then((m) => ({ default: m.ConstructorView }))
+);
+const ActivityLog = lazy(() =>
+  import("@/components/activity-log").then((m) => ({ default: m.ActivityLog }))
+);
 
 function ViewSkeleton() {
   return (
     <div className="space-y-4">
       <Skeleton className="h-8 w-48" />
       <Skeleton className="h-4 w-72" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-40" />
         ))}
@@ -51,7 +57,16 @@ export default function Home() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-      const NAV_IDS: AppView[] = ["dashboards", "explorer", "datasources", "plugins", "modules", "constructor", "activity", "settings"];
+      const NAV_IDS: AppView[] = [
+        "dashboards",
+        "explorer",
+        "datasources",
+        "plugins",
+        "modules",
+        "constructor",
+        "activity",
+        "settings",
+      ];
 
       if (e.altKey && e.key >= "1" && e.key <= "8") {
         e.preventDefault();
@@ -90,7 +105,11 @@ export default function Home() {
       case "dashboard-detail":
         return <DashboardDetailView />;
       case "explorer":
-        return <Suspense fallback={<ViewSkeleton />}><ExplorerView /></Suspense>;
+        return (
+          <Suspense fallback={<ViewSkeleton />}>
+            <ExplorerView />
+          </Suspense>
+        );
       case "datasources":
         return <DataSourcesView />;
       case "plugins":
@@ -100,14 +119,18 @@ export default function Home() {
       case "settings":
         return <SettingsView />;
       case "constructor":
-        return <Suspense fallback={<ViewSkeleton />}><ConstructorView /></Suspense>;
+        return (
+          <Suspense fallback={<ViewSkeleton />}>
+            <ConstructorView />
+          </Suspense>
+        );
       case "activity":
         return (
           <Suspense fallback={<ViewSkeleton />}>
             <div className="space-y-4">
               <div>
                 <h1 className="text-2xl font-bold">{t("views.activity")}</h1>
-                <p className="text-sm text-muted-foreground mt-1">{t("views.activityDesc")}</p>
+                <p className="text-muted-foreground mt-1 text-sm">{t("views.activityDesc")}</p>
               </div>
               <ActivityLog showFilters />
             </div>
@@ -123,13 +146,16 @@ export default function Home() {
     if (currentView === "dashboard-detail") {
       crumbs.push({ label: t("nav.dashboards"), view: "dashboards" });
       const dashboard = dashboards.find((d) => d._id === selectedDashboardId);
-      crumbs.push({ label: dashboard?.title || t("views.dashboardDetail"), view: "dashboard-detail" });
+      crumbs.push({
+        label: dashboard?.title || t("views.dashboardDetail"),
+        view: "dashboard-detail",
+      });
     }
     return crumbs;
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="bg-background flex min-h-screen flex-col">
       <Header
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
@@ -143,7 +169,7 @@ export default function Home() {
         <MobileSidebar open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
         <main className="flex-1 overflow-auto">
-          <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+          <div className="mx-auto max-w-7xl p-4 md:p-6 lg:p-8">
             <ErrorBoundary key={currentView}>{renderView()}</ErrorBoundary>
           </div>
         </main>

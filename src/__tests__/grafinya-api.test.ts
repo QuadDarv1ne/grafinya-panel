@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GraphinyaClient, GraphinyaAPIError, resetGraphinyaClient, getGraphinyaClient } from "@/lib/grafinya-api";
+import {
+  GraphinyaClient,
+  GraphinyaAPIError,
+  resetGraphinyaClient,
+  getGraphinyaClient,
+} from "@/lib/grafinya-api";
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -31,7 +36,10 @@ describe("GraphinyaClient", () => {
   let client: GraphinyaClient;
 
   beforeEach(() => {
-    client = new GraphinyaClient({ baseUrl: "http://localhost:8000", frontendUrl: "http://localhost:3000" });
+    client = new GraphinyaClient({
+      baseUrl: "http://localhost:8000",
+      frontendUrl: "http://localhost:3000",
+    });
   });
 
   describe("config", () => {
@@ -59,7 +67,9 @@ describe("GraphinyaClient", () => {
     });
 
     it("login sets tokens", async () => {
-      mockFetch.mockReturnValueOnce(jsonResponse({ accessToken: "new-at", refreshToken: "new-rt" }));
+      mockFetch.mockReturnValueOnce(
+        jsonResponse({ accessToken: "new-at", refreshToken: "new-rt" })
+      );
       const tokens = await client.login("admin", "pass");
       expect(tokens.accessToken).toBe("new-at");
       expect(client.isAuthenticated()).toBe(true);
@@ -89,7 +99,9 @@ describe("GraphinyaClient", () => {
       expect(result).toEqual(dashboards);
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8000/api/v1/dashboards",
-        expect.objectContaining({ headers: expect.objectContaining({ Authorization: "Bearer at" }) })
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: "Bearer at" }),
+        })
       );
     });
 
@@ -113,14 +125,18 @@ describe("GraphinyaClient", () => {
   describe("error handling", () => {
     it("throws GraphinyaAPIError on failure", async () => {
       client.setTokens({ accessToken: "at", refreshToken: "rt" });
-      mockFetch.mockReturnValueOnce(errorResponse(404, { code: "NOT_FOUND", message: "Not found" }));
+      mockFetch.mockReturnValueOnce(
+        errorResponse(404, { code: "NOT_FOUND", message: "Not found" })
+      );
 
       await expect(client.getDashboard("missing")).rejects.toThrow(GraphinyaAPIError);
     });
 
     it("includes status and code in error", async () => {
       client.setTokens({ accessToken: "at", refreshToken: "rt" });
-      mockFetch.mockReturnValueOnce(errorResponse(403, { code: "FORBIDDEN", message: "No access" }));
+      mockFetch.mockReturnValueOnce(
+        errorResponse(403, { code: "FORBIDDEN", message: "No access" })
+      );
 
       try {
         await client.getDashboard("1");

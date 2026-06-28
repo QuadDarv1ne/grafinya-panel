@@ -159,7 +159,8 @@
 
 /* Pulse animation for live indicators */
 @keyframes pulse-dot {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -174,8 +175,9 @@
 /* Card hover glow effect */
 @layer utilities {
   .card-glow-amber:hover {
-    box-shadow: 0 0 0 1px oklch(0.769 0.188 70.08 / 10%),
-                0 4px 16px oklch(0.769 0.188 70.08 / 8%);
+    box-shadow:
+      0 0 0 1px oklch(0.769 0.188 70.08 / 10%),
+      0 4px 16px oklch(0.769 0.188 70.08 / 8%);
   }
 }
 

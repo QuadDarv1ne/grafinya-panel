@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,7 +18,8 @@ import {
 } from "lucide-react";
 
 export type NotificationType = "info" | "success" | "warning" | "error";
-export type NotificationCategory = "system" | "datasource" | "dashboard" | "plugin" | "module" | "security";
+export type NotificationCategory =
+  "system" | "datasource" | "dashboard" | "plugin" | "module" | "security";
 
 export interface AppNotification {
   id: string;
@@ -47,7 +44,8 @@ function generateDemoNotifications(): AppNotification[] {
       type: "success",
       category: "system",
       title: "Система запущена",
-      message: "Графиня успешно инициализирована. Все базовые компоненты работают в штатном режиме.",
+      message:
+        "Графиня успешно инициализирована. Все базовые компоненты работают в штатном режиме.",
       timestamp: now - 5 * 60 * 1000,
       read: false,
     },
@@ -66,7 +64,8 @@ function generateDemoNotifications(): AppNotification[] {
       type: "warning",
       category: "datasource",
       title: "Высокая задержка ответа",
-      message: "Источник «PostgreSQL analytics» отвечает медленнее обычного (p95 = 1.2с). Рекомендуем проверить индексы.",
+      message:
+        "Источник «PostgreSQL analytics» отвечает медленнее обычного (p95 = 1.2с). Рекомендуем проверить индексы.",
       timestamp: now - 2 * 60 * 60 * 1000,
       read: false,
       action: { label: "Диагностика", url: "datasources" },
@@ -114,8 +113,16 @@ function generateDemoNotifications(): AppNotification[] {
 
 const typeConfig: Record<NotificationType, { icon: React.ReactNode; color: string; bg: string }> = {
   info: { icon: <Info className="h-4 w-4" />, color: "text-blue-500", bg: "bg-blue-500/10" },
-  success: { icon: <CheckCircle2 className="h-4 w-4" />, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-  warning: { icon: <AlertTriangle className="h-4 w-4" />, color: "text-amber-500", bg: "bg-amber-500/10" },
+  success: {
+    icon: <CheckCircle2 className="h-4 w-4" />,
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/10",
+  },
+  warning: {
+    icon: <AlertTriangle className="h-4 w-4" />,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+  },
   error: { icon: <AlertCircle className="h-4 w-4" />, color: "text-red-500", bg: "bg-red-500/10" },
 };
 
@@ -140,7 +147,9 @@ function formatTime(ts: number): string {
 }
 
 export function NotificationsDropdown() {
-  const [notifications, setNotifications] = useState<AppNotification[]>(() => generateDemoNotifications());
+  const [notifications, setNotifications] = useState<AppNotification[]>(() =>
+    generateDemoNotifications()
+  );
   const [open, setOpen] = useState(false);
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
@@ -164,39 +173,29 @@ export function NotificationsDropdown() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 relative"
-          title="Уведомления"
-        >
+        <Button variant="ghost" size="icon" className="relative h-8 w-8" title="Уведомления">
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-96 p-0">
-        <div className="flex items-center justify-between p-3 border-b">
+        <div className="flex items-center justify-between border-b p-3">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold">Уведомления</h3>
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="text-[10px] h-5">
+              <Badge variant="secondary" className="h-5 text-[10px]">
                 {unreadCount} новых
               </Badge>
             )}
           </div>
           <div className="flex items-center gap-1">
             {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={markAllRead}
-              >
-                <Check className="h-3 w-3 mr-1" />
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={markAllRead}>
+                <Check className="mr-1 h-3 w-3" />
                 Прочитать
               </Button>
             )}
@@ -204,7 +203,7 @@ export function NotificationsDropdown() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 text-xs text-muted-foreground hover:text-red-500"
+                className="text-muted-foreground h-7 text-xs hover:text-red-500"
                 onClick={clearAll}
               >
                 <Trash2 className="h-3 w-3" />
@@ -215,12 +214,10 @@ export function NotificationsDropdown() {
 
         <ScrollArea className="h-80">
           {notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-              <Bell className="h-8 w-8 text-muted-foreground/40 mb-2" />
-              <p className="text-sm text-muted-foreground">Нет уведомлений</p>
-              <p className="text-xs text-muted-foreground/70 mt-1">
-                Новые события появятся здесь
-              </p>
+            <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+              <Bell className="text-muted-foreground/40 mb-2 h-8 w-8" />
+              <p className="text-muted-foreground text-sm">Нет уведомлений</p>
+              <p className="text-muted-foreground/70 mt-1 text-xs">Новые события появятся здесь</p>
             </div>
           ) : (
             <div className="divide-y">
@@ -229,18 +226,20 @@ export function NotificationsDropdown() {
                 return (
                   <div
                     key={notification.id}
-                    className={`group relative p-3 hover:bg-muted/50 transition-colors cursor-pointer ${
+                    className={`group hover:bg-muted/50 relative cursor-pointer p-3 transition-colors ${
                       !notification.read ? "bg-amber-500/5" : ""
                     }`}
                     onClick={() => markAsRead(notification.id)}
                   >
                     <div className="flex gap-3">
-                      <div className={`h-8 w-8 rounded-full ${cfg.bg} flex items-center justify-center shrink-0 ${cfg.color}`}>
+                      <div
+                        className={`h-8 w-8 rounded-full ${cfg.bg} flex shrink-0 items-center justify-center ${cfg.color}`}
+                      >
                         {cfg.icon}
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-foreground line-clamp-1">
+                          <p className="text-foreground line-clamp-1 text-sm font-medium">
                             {notification.title}
                           </p>
                           <button
@@ -248,23 +247,23 @@ export function NotificationsDropdown() {
                               e.stopPropagation();
                               removeNotification(notification.id);
                             }}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0"
+                            className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                           >
                             <X className="h-3.5 w-3.5" />
                           </button>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
                           {notification.message}
                         </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge variant="outline" className="text-[9px] h-4 px-1">
+                        <div className="mt-2 flex items-center gap-2">
+                          <Badge variant="outline" className="h-4 px-1 text-[9px]">
                             {categoryLabels[notification.category]}
                           </Badge>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-muted-foreground text-[10px]">
                             {formatTime(notification.timestamp)}
                           </span>
                           {!notification.read && (
-                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 ml-auto" />
+                            <span className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-500" />
                           )}
                         </div>
                       </div>
@@ -280,7 +279,7 @@ export function NotificationsDropdown() {
           <>
             <Separator />
             <div className="p-2">
-              <Button variant="ghost" size="sm" className="w-full text-xs h-8">
+              <Button variant="ghost" size="sm" className="h-8 w-full text-xs">
                 Показать все уведомления
               </Button>
             </div>
