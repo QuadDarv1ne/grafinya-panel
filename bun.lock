@@ -8,7 +8,6 @@
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
-        "@hookform/resolvers": "^5.1.1",
         "@mdxeditor/editor": "^3.39.1",
         "@radix-ui/react-accordion": "^1.2.11",
         "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -53,9 +52,7 @@
         "react": "^19.0.0",
         "react-day-picker": "^9.8.0",
         "react-dom": "^19.0.0",
-        "react-hook-form": "^7.60.0",
         "react-markdown": "^10.1.0",
-        "react-resizable-panels": "^3.0.3",
         "react-syntax-highlighter": "^15.6.1",
         "recharts": "^2.15.4",
         "sharp": "^0.34.3",
@@ -262,8 +259,6 @@
     "@floating-ui/react-dom": ["@floating-ui/react-dom@2.1.6", "https://registry.npmjs.com/@floating-ui/react-dom/-/react-dom-2.1.6.tgz", { "dependencies": { "@floating-ui/dom": "^1.7.4" }, "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-4JX6rEatQEvlmgU80wZyq9RT96HZJa88q8hp0pBd+LrczeDI4o6uA2M+uvxngVHo4Ihr8uibXxH6+70zhAFrVw=="],
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.10", "https://registry.npmjs.com/@floating-ui/utils/-/utils-0.2.10.tgz", {}, "sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ=="],
-
-    "@hookform/resolvers": ["@hookform/resolvers@5.2.2", "https://registry.npmjs.com/@hookform/resolvers/-/resolvers-5.2.2.tgz", { "dependencies": { "@standard-schema/utils": "^0.3.0" }, "peerDependencies": { "react-hook-form": "^7.55.0" } }, "sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA=="],
 
     "@humanfs/core": ["@humanfs/core@0.19.1", "https://registry.npmjs.com/@humanfs/core/-/core-0.19.1.tgz", {}, "sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA=="],
 
@@ -610,8 +605,6 @@
     "@rtsao/scc": ["@rtsao/scc@1.1.0", "https://registry.npmjs.com/@rtsao/scc/-/scc-1.1.0.tgz", {}, "sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "https://registry.npmjs.com/@standard-schema/spec/-/spec-1.1.0.tgz", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
-
-    "@standard-schema/utils": ["@standard-schema/utils@0.3.0", "https://registry.npmjs.com/@standard-schema/utils/-/utils-0.3.0.tgz", {}, "sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g=="],
 
     "@stitches/core": ["@stitches/core@1.2.8", "https://registry.npmjs.com/@stitches/core/-/core-1.2.8.tgz", {}, "sha512-Gfkvwk9o9kE9r9XNBmJRfV8zONvXThnm1tcuojL04Uy5uRyqg93DC83lDebl0rocZCfKSjUv+fWYtMQmEDJldg=="],
 
@@ -1588,8 +1581,6 @@
     "react-remove-scroll": ["react-remove-scroll@2.7.2", "https://registry.npmjs.com/react-remove-scroll/-/react-remove-scroll-2.7.2.tgz", { "dependencies": { "react-remove-scroll-bar": "^2.3.7", "react-style-singleton": "^2.2.3", "tslib": "^2.1.0", "use-callback-ref": "^1.3.3", "use-sidecar": "^1.1.3" }, "peerDependencies": { "@types/react": "*", "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react"] }, "sha512-Iqb9NjCCTt6Hf+vOdNIZGdTiH1QSqr27H/Ek9sv/a97gfueI/5h1s3yRi1nngzMUaOOToin5dI1dXKdXiF+u0Q=="],
 
     "react-remove-scroll-bar": ["react-remove-scroll-bar@2.3.8", "https://registry.npmjs.com/react-remove-scroll-bar/-/react-remove-scroll-bar-2.3.8.tgz", { "dependencies": { "react-style-singleton": "^2.2.2", "tslib": "^2.0.0" }, "peerDependencies": { "@types/react": "*", "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react"] }, "sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q=="],
-
-    "react-resizable-panels": ["react-resizable-panels@3.0.6", "https://registry.npmjs.com/react-resizable-panels/-/react-resizable-panels-3.0.6.tgz", { "peerDependencies": { "react": "^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc", "react-dom": "^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc" } }, "sha512-b3qKHQ3MLqOgSS+FRYKapNkJZf5EQzuf6+RLiq1/IlTHw99YrZ2NJZLk4hQIzTnnIkRg2LUqyVinu6YWWpUYew=="],
 
     "react-smooth": ["react-smooth@4.0.4", "https://registry.npmjs.com/react-smooth/-/react-smooth-4.0.4.tgz", { "dependencies": { "fast-equals": "^5.0.1", "prop-types": "^15.8.1", "react-transition-group": "^4.4.5" }, "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-gnGKTpYwqL0Iii09gHobNolvX4Kiq4PKx6eWBCYYix+8cdw+cGo3do906l1NBPKkSWx1DghC1dlWG9L2uGd61Q=="],
 

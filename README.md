@@ -58,8 +58,8 @@
 | **shadcn/ui** | Компоненты интерфейса / UI components |
 | **Zustand 5** | Управление состоянием / State management |
 | **Recharts** | Визуализация данных / Data visualization |
-| **Prisma 6** | ORM для базы данных / Database ORM |
 | **Framer Motion 12** | Анимации / Animations |
+| **Vitest** | Unit-тесты / Unit testing |
 
 ### Быстрый старт / Quick Start
 
@@ -95,6 +95,13 @@ bun run dev
 - [x] Шаблоны дашбордов / Dashboard templates
 - [x] 8 цветовых палитр / 8 color palettes
 - [x] Онбординг-тур / Onboarding tour
+- [x] Unit-тесты (Vitest) / Unit tests (Vitest)
+- [x] CI/CD (GitHub Actions)
+- [x] Docker / docker-compose
+- [x] i18n (ru/en) / Internationalization
+- [x] PWA + Service Worker
+- [x] Zod-валидация / Zod validation
+- [x] Prettier / Code formatting
 
 ---
 
