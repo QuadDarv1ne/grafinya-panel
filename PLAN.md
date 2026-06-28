@@ -24,7 +24,7 @@
 ### 3. Внедрить React Query (@tanstack/react-query)
 Заменить ручное управление `isLoading` + `useState` на React Query хуки (`useQuery`, `useMutation`). Это даст автоматическое кэширование, refetch на фокусе, оптимистичные обновления и retry.
 
-**Статус:** Провайдер установлен ✓ (QueryClientProvider в layout, готов к миграции компонентов)
+**Статус:** Готово ✓ (4 вьюха мигрированы: dashboards, datasources, plugins, modules)
 
 ---
 
