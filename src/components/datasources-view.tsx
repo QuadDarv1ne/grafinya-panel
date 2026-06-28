@@ -329,8 +329,27 @@ export function DataSourcesView() {
 
       {/* Loading */}
       {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-9 w-9 bg-muted rounded-lg" />
+                  <div>
+                    <div className="h-4 bg-muted rounded w-24 mb-1" />
+                    <div className="h-3 bg-muted rounded w-32" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="h-3 bg-muted rounded w-full" />
+                  <div className="h-3 bg-muted rounded w-4/5" />
+                  <div className="h-3 bg-muted rounded w-3/5" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 

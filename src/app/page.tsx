@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { useGraphinyaStore } from "@/lib/store";
 import type { AppView } from "@/lib/store";
 import { ConnectionSetup } from "@/components/connection-setup";
@@ -10,17 +10,33 @@ import { DataSourcesView } from "@/components/datasources-view";
 import { PluginsView } from "@/components/plugins-view";
 import { ModulesView } from "@/components/modules-view";
 import { SettingsView } from "@/components/settings-view";
-import { ExplorerView } from "@/components/explorer-view";
-import { ConstructorView } from "@/components/constructor-view";
 import { WelcomeScreen } from "@/components/welcome-screen";
 import { CommandPalette } from "@/components/command-palette";
 import { NotificationsDropdown } from "@/components/notifications-dropdown";
 import { HelpDialog } from "@/components/help-dialog";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { RecentItemsList } from "@/components/recent-items";
-import { ActivityLog } from "@/components/activity-log";
 import { OnboardingTour } from "@/components/onboarding-tour";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+
+const ExplorerView = lazy(() => import("@/components/explorer-view").then(m => ({ default: m.ExplorerView })));
+const ConstructorView = lazy(() => import("@/components/constructor-view").then(m => ({ default: m.ConstructorView })));
+const ActivityLog = lazy(() => import("@/components/activity-log").then(m => ({ default: m.ActivityLog })));
+
+function ViewSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-4 w-72" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-40" />
+        ))}
+      </div>
+    </div>
+  );
+}
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -127,7 +143,7 @@ export default function Home() {
       case "dashboard-detail":
         return <DashboardDetailView />;
       case "explorer":
-        return <ExplorerView />;
+        return <Suspense fallback={<ViewSkeleton />}><ExplorerView /></Suspense>;
       case "datasources":
         return <DataSourcesView />;
       case "plugins":
@@ -137,18 +153,20 @@ export default function Home() {
       case "settings":
         return <SettingsView />;
       case "constructor":
-        return <ConstructorView />;
+        return <Suspense fallback={<ViewSkeleton />}><ConstructorView /></Suspense>;
       case "activity":
         return (
-          <div className="space-y-4">
-            <div>
-              <h1 className="text-2xl font-bold">Журнал активности</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                История ваших действий в системе. Записи сохраняются локально и не передаются на сервер.
-              </p>
+          <Suspense fallback={<ViewSkeleton />}>
+            <div className="space-y-4">
+              <div>
+                <h1 className="text-2xl font-bold">Журнал активности</h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  История ваших действий в системе. Записи сохраняются локально и не передаются на сервер.
+                </p>
+              </div>
+              <ActivityLog showFilters />
             </div>
-            <ActivityLog showFilters />
-          </div>
+          </Suspense>
         );
       default:
         return <DashboardsView />;
