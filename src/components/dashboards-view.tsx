@@ -184,6 +184,48 @@ export function DashboardsView() {
     toast({ title: "Дашборд экспортирован", description: dashboard.title });
   };
 
+  const handleImport = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const imported = JSON.parse(ev.target?.result as string) as Partial<Dashboard>;
+          const newDashboard: Dashboard = {
+            _id: `dash-${Date.now()}`,
+            title: imported.title || "Импортированный дашборд",
+            description: imported.description,
+            tags: imported.tags,
+            isFavorite: false,
+            createdBy: "import",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            widgets: imported.widgets || [],
+            variables: imported.variables || [],
+            refreshTime: imported.refreshTime || 30000,
+          };
+          setDashboards([...dashboards, newDashboard]);
+          toast({
+            title: "Дашборд импортирован",
+            description: newDashboard.title,
+          });
+        } catch {
+          toast({
+            title: "Ошибка импорта",
+            description: "Неверный формат JSON-файла",
+            variant: "destructive",
+          });
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
   const handleOpen = (id: string) => {
     setSelectedDashboardId(id);
     setCurrentView("dashboard-detail");
@@ -262,6 +304,10 @@ export function DashboardsView() {
             <Button variant="outline" onClick={() => setShowTemplates(true)}>
               <LayoutTemplate className="mr-2 h-4 w-4" />
               Шаблоны
+            </Button>
+            <Button variant="outline" onClick={handleImport}>
+              <Upload className="mr-2 h-4 w-4" />
+              Импорт
             </Button>
             <Button
               onClick={() => setShowCreate(true)}
