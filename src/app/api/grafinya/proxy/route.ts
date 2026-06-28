@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-const ALLOWED_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
-
 const ProxyRequestSchema = z.object({
   path: z
     .string()

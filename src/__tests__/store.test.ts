@@ -251,4 +251,57 @@ describe("Graphinya Store", () => {
       expect(useGraphinyaStore.getState().onboardingCompleted).toBe(true);
     });
   });
+
+  describe("Dashboard import/export", () => {
+    it("imports dashboard via setDashboards", () => {
+      const imported = [
+        { _id: "imp-1", title: "Imported", widgets: [], createdAt: "", updatedAt: "" },
+      ];
+      useGraphinyaStore.getState().setDashboards(imported);
+      expect(useGraphinyaStore.getState().dashboards).toHaveLength(1);
+      expect(useGraphinyaStore.getState().dashboards[0].title).toBe("Imported");
+    });
+
+    it("preserves imported dashboard structure", () => {
+      const imported = [
+        {
+          _id: "imp-2",
+          title: "With Widgets",
+          widgets: [{ id: "w1", title: "Widget", type: "graph" }],
+          variables: [{ name: "env", type: "custom", current: "prod" }],
+          refreshTime: 10000,
+          createdAt: "2025-01-01",
+          updatedAt: "2025-01-02",
+        },
+      ];
+      useGraphinyaStore.getState().setDashboards(imported);
+      const d = useGraphinyaStore.getState().dashboards[0];
+      expect(d.widgets).toHaveLength(1);
+      expect(d.variables).toHaveLength(1);
+      expect(d.refreshTime).toBe(10000);
+    });
+
+    it("export creates valid JSON structure", () => {
+      useGraphinyaStore.getState().setDashboards([
+        {
+          _id: "exp-1",
+          title: "Export Test",
+          description: "Test desc",
+          tags: ["test"],
+          isFavorite: true,
+          widgets: [{ id: "w1", title: "W1", type: "bar" }],
+          createdAt: "2025-01-01",
+          updatedAt: "2025-01-02",
+        },
+      ]);
+      const dashboard = useGraphinyaStore.getState().dashboards[0];
+      const json = JSON.parse(JSON.stringify(dashboard));
+      expect(json._id).toBe("exp-1");
+      expect(json.title).toBe("Export Test");
+      expect(json.description).toBe("Test desc");
+      expect(json.tags).toEqual(["test"]);
+      expect(json.isFavorite).toBe(true);
+      expect(json.widgets).toHaveLength(1);
+    });
+  });
 });
