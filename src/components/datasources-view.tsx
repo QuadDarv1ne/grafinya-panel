@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useGraphinyaStore } from "@/lib/store";
 import { useGraphinyaApi } from "@/hooks/use-grafinya-api";
 import type { DataSource, DataSourceField } from "@/lib/grafinya-api";
@@ -138,10 +139,11 @@ const PLUGIN_DEFAULT_FIELDS: Record<string, DataSourceField[]> = {
 };
 
 export function DataSourcesView() {
-  const { dataSources, setDataSources, connectionStatus, isLoading, setIsLoading } =
+  const { dataSources, setDataSources, connectionStatus } =
     useGraphinyaStore();
   const { call } = useGraphinyaApi();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -154,27 +156,27 @@ export function DataSourcesView() {
   const [isDefault, setIsDefault] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const fetchDataSources = useCallback(async () => {
-    if (connectionStatus === "demo") {
-      setDataSources(DEMO_DATASOURCES);
-      return;
-    }
-    if (connectionStatus !== "connected") return;
-    setIsLoading(true);
-    try {
+  const isConnected = connectionStatus === "connected" || connectionStatus === "demo";
+
+  const {
+    data: fetchedDataSources,
+    isLoading,
+  } = useQuery({
+    queryKey: ["datasources", connectionStatus],
+    queryFn: async () => {
+      if (connectionStatus === "demo") return DEMO_DATASOURCES;
+      if (connectionStatus !== "connected") return [];
       const data = await call<DataSource[]>({ path: "/datasources" });
-      setDataSources(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Failed to fetch data sources:", err);
-      setDataSources([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [connectionStatus, call, setDataSources, setIsLoading]);
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: isConnected,
+  });
 
   useEffect(() => {
-    fetchDataSources();
-  }, [fetchDataSources]);
+    if (fetchedDataSources) {
+      setDataSources(fetchedDataSources);
+    }
+  }, [fetchedDataSources, setDataSources]);
 
   const handleCreate = async () => {
     if (!newName.trim() || !newPlugin) return;
@@ -200,7 +202,7 @@ export function DataSourcesView() {
           body: { name: newName, pluginId: newPlugin, fields: newFields, isDefault },
         });
         toast({ title: "Источник данных создан", description: newName });
-        fetchDataSources();
+        queryClient.invalidateQueries({ queryKey: ["datasources"] });
       } catch (err) {
         toast({ title: "Ошибка создания", variant: "destructive" });
       }
@@ -242,7 +244,7 @@ export function DataSourcesView() {
           body: { name: newName, fields: newFields, isDefault },
         });
         toast({ title: "Источник данных обновлён", description: newName });
-        fetchDataSources();
+        queryClient.invalidateQueries({ queryKey: ["datasources"] });
       } catch (err) {
         toast({ title: "Ошибка обновления", variant: "destructive" });
       }
@@ -261,7 +263,7 @@ export function DataSourcesView() {
     try {
       await call({ path: `/datasources/${id}`, method: "DELETE" });
       toast({ title: "Источник данных удалён" });
-      fetchDataSources();
+      queryClient.invalidateQueries({ queryKey: ["datasources"] });
     } catch (err) {
       toast({ title: "Ошибка удаления", variant: "destructive" });
     }
@@ -314,8 +316,6 @@ export function DataSourcesView() {
       ds.name.toLowerCase().includes(search.toLowerCase()) ||
       ds.pluginId?.toLowerCase().includes(search.toLowerCase())
   );
-
-  const isConnected = connectionStatus === "connected" || connectionStatus === "demo";
 
   const getPluginIcon = (pluginId: string) =>
     PLUGIN_TYPES.find((p) => p.value === pluginId)?.icon || (

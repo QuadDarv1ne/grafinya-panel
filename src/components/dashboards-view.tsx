@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useGraphinyaStore } from "@/lib/store";
 import { useGraphinyaApi } from "@/hooks/use-grafinya-api";
 import type { Dashboard } from "@/lib/grafinya-api";
@@ -53,14 +54,13 @@ export function DashboardsView() {
     setSelectedDashboardId,
     setCurrentView,
     connectionStatus,
-    isLoading,
-    setIsLoading,
     isDemoMode,
     toggleDashboardFavorite,
     addWidgetToDashboard,
   } = useGraphinyaStore();
   const { call } = useGraphinyaApi();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
@@ -73,27 +73,25 @@ export function DashboardsView() {
 
   const isConnected = connectionStatus === "connected" || connectionStatus === "demo";
 
-  const fetchDashboards = useCallback(async () => {
-    if (connectionStatus === "demo") {
-      setDashboards(DEMO_DASHBOARDS);
-      return;
-    }
-    if (connectionStatus !== "connected") return;
-    setIsLoading(true);
-    try {
+  const {
+    data: fetchedDashboards,
+    isLoading,
+  } = useQuery({
+    queryKey: ["dashboards", connectionStatus],
+    queryFn: async () => {
+      if (connectionStatus === "demo") return DEMO_DASHBOARDS;
+      if (connectionStatus !== "connected") return [];
       const data = await call<Dashboard[]>({ path: "/dashboards" });
-      setDashboards(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Failed to fetch dashboards:", err);
-      setDashboards([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [connectionStatus, call, setDashboards, setIsLoading]);
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: isConnected,
+  });
 
   useEffect(() => {
-    fetchDashboards();
-  }, [fetchDashboards]);
+    if (fetchedDashboards) {
+      setDashboards(fetchedDashboards);
+    }
+  }, [fetchedDashboards, setDashboards]);
 
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
@@ -126,7 +124,7 @@ export function DashboardsView() {
           body: { title: newTitle, description: newDesc, tags },
         });
         toast({ title: "Дашборд создан", description: newTitle });
-        fetchDashboards();
+        queryClient.invalidateQueries({ queryKey: ["dashboards"] });
       } catch (err) {
         toast({
           title: "Ошибка",
@@ -150,7 +148,7 @@ export function DashboardsView() {
     try {
       await call({ path: `/dashboards/${id}`, method: "DELETE" });
       toast({ title: "Дашборд удалён" });
-      fetchDashboards();
+      queryClient.invalidateQueries({ queryKey: ["dashboards"] });
     } catch (err) {
       toast({ title: "Ошибка удаления", variant: "destructive" });
     }
@@ -510,7 +508,7 @@ export function DashboardsView() {
           selectedIds={selectedIds}
           dashboards={dashboards}
           onClearSelection={clearSelection}
-          onRefresh={fetchDashboards}
+          onRefresh={() => queryClient.invalidateQueries({ queryKey: ["dashboards"] })}
         />
       )}
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useGraphinyaStore } from "@/lib/store";
 import { useGraphinyaApi } from "@/hooks/use-grafinya-api";
 import type { Module } from "@/lib/grafinya-api";
@@ -11,32 +12,30 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Blocks, CheckCircle2, Settings2, LayoutGrid } from "lucide-react";
 
 export function ModulesView() {
-  const { modules, setModules, connectionStatus, isLoading, setIsLoading } = useGraphinyaStore();
+  const { modules, setModules, connectionStatus } = useGraphinyaStore();
   const { call } = useGraphinyaApi();
 
-  const fetchModules = useCallback(async () => {
-    if (connectionStatus === "demo") {
-      setModules(DEMO_MODULES);
-      return;
-    }
-    if (connectionStatus !== "connected") return;
-    setIsLoading(true);
-    try {
+  const isConnected = connectionStatus === "connected" || connectionStatus === "demo";
+
+  const {
+    data: fetchedModules,
+    isLoading,
+  } = useQuery({
+    queryKey: ["modules", connectionStatus],
+    queryFn: async () => {
+      if (connectionStatus === "demo") return DEMO_MODULES;
+      if (connectionStatus !== "connected") return [];
       const data = await call<Module[]>({ path: "/modules" });
-      setModules(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Failed to fetch modules:", err);
-      setModules([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [connectionStatus, call, setModules, setIsLoading]);
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: isConnected,
+  });
 
   useEffect(() => {
-    fetchModules();
-  }, [fetchModules]);
-
-  const isConnected = connectionStatus === "connected" || connectionStatus === "demo";
+    if (fetchedModules) {
+      setModules(fetchedModules);
+    }
+  }, [fetchedModules, setModules]);
 
   return (
     <div className="space-y-6">
