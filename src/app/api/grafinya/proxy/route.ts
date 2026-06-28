@@ -1,39 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 const ALLOWED_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
 
+const ProxyRequestSchema = z.object({
+  path: z.string().min(1).refine(
+    (p) => !p.includes("..") && !p.includes("//"),
+    "Path must not contain .. or //"
+  ),
+  method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]).default("GET"),
+  body: z.unknown().optional(),
+  baseUrl: z.string().url("baseUrl must be a valid URL").refine(
+    (url) => url.startsWith("http://") || url.startsWith("https://"),
+    "baseUrl must be HTTP(S)"
+  ),
+  accessToken: z.string().optional(),
+});
+
 export async function POST(request: NextRequest) {
   try {
-    const { path, method = "GET", body, baseUrl, accessToken } = await request.json();
+    const json = await request.json();
+    const parsed = ProxyRequestSchema.safeParse(json);
 
-    if (!baseUrl || !path) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "baseUrl and path are required" },
+        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
 
-    if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
-      return NextResponse.json(
-        { error: "Invalid baseUrl: must be an HTTP(S) URL" },
-        { status: 400 }
-      );
-    }
-
-    if (path.includes("..") || path.includes("//")) {
-      return NextResponse.json(
-        { error: "Invalid path" },
-        { status: 400 }
-      );
-    }
-
-    if (!ALLOWED_METHODS.has(method)) {
-      return NextResponse.json(
-        { error: `Method ${method} is not allowed` },
-        { status: 405 }
-      );
-    }
-
+    const { path, method, body, baseUrl, accessToken } = parsed.data;
     const targetUrl = `${baseUrl}/api/v1${path}`;
 
     const headers: Record<string, string> = {
@@ -45,10 +41,7 @@ export async function POST(request: NextRequest) {
       headers["Authorization"] = `Bearer ${accessToken}`;
     }
 
-    const fetchOptions: RequestInit = {
-      method,
-      headers,
-    };
+    const fetchOptions: RequestInit = { method, headers };
 
     if (body && method !== "GET") {
       fetchOptions.body = JSON.stringify(body);
@@ -65,7 +58,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("Proxy error:", error);

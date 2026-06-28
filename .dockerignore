@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+*.log
+.env*
+!.env.example
+db/*.db
+.claude
+.z-ai-config
+skills
+test
+prompt
+local-*

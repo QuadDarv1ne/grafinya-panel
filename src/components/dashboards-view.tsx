@@ -11,6 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -63,6 +73,7 @@ export function DashboardsView() {
   const [newTags, setNewTags] = useState("");
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const isConnected = connectionStatus === "connected" || connectionStatus === "demo";
 
@@ -340,7 +351,7 @@ export function DashboardsView() {
                 key={dashboard._id}
                 dashboard={dashboard}
                 onOpen={handleOpen}
-                onDelete={handleDelete}
+                onDelete={setDeleteTarget}
                 onToggleFavorite={handleToggleFavorite}
                 onDuplicate={handleDuplicate}
                 onExport={handleExport}
@@ -380,7 +391,7 @@ export function DashboardsView() {
                 key={dashboard._id}
                 dashboard={dashboard}
                 onOpen={handleOpen}
-                onDelete={handleDelete}
+                onDelete={setDeleteTarget}
                 onToggleFavorite={handleToggleFavorite}
                 onDuplicate={handleDuplicate}
                 onExport={handleExport}
@@ -464,6 +475,30 @@ export function DashboardsView() {
           onRefresh={fetchDashboards}
         />
       )}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить дашборд?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие нельзя отменить. Дашборд и все его виджеты будут удалены.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteTarget) handleDelete(deleteTarget);
+                setDeleteTarget(null);
+              }}
+            >
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -552,6 +587,7 @@ function DashboardCard({
                 e.stopPropagation();
                 onDelete(dashboard._id);
               }}
+              title="Удалить"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
