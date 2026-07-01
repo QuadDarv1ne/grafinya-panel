@@ -48,7 +48,7 @@ export interface DashboardVariable {
 }
 
 // ---- Widget types ----
-export type WidgetType = "line" | "bar" | "pie" | "table" | "gauge";
+export type WidgetType = "line" | "area" | "bar" | "pie" | "table" | "gauge";
 
 export interface Widget {
   id: string;

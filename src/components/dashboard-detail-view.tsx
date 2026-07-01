@@ -112,6 +112,7 @@ const CHART_COLORS = [
 
 const WIDGET_TYPES: { value: WidgetType; label: string; icon: React.ReactNode }[] = [
   { value: "line", label: "Линейный график", icon: <TrendingUp className="h-4 w-4" /> },
+  { value: "area", label: "Area график", icon: <TrendingUp className="h-4 w-4" /> },
   { value: "bar", label: "Столбчатая диаграмма", icon: <BarChart3 className="h-4 w-4" /> },
   { value: "pie", label: "Круговая диаграмма", icon: <Activity className="h-4 w-4" /> },
   { value: "table", label: "Таблица", icon: <Table2 className="h-4 w-4" /> },
@@ -120,6 +121,7 @@ const WIDGET_TYPES: { value: WidgetType; label: string; icon: React.ReactNode }[
 
 const WIDGET_ICONS: Record<WidgetType, React.ReactNode> = {
   line: <TrendingUp className="h-3.5 w-3.5" />,
+  area: <TrendingUp className="h-3.5 w-3.5" />,
   bar: <BarChart3 className="h-3.5 w-3.5" />,
   pie: <Activity className="h-3.5 w-3.5" />,
   table: <Table2 className="h-3.5 w-3.5" />,
@@ -951,7 +953,7 @@ function WidgetEditorDialog({
           </div>
           <div className="space-y-2">
             <Label>Тип визуализации</Label>
-            <Select value={type} onValueChange={setType}>
+            <Select value={type} onValueChange={(v) => setType(v as WidgetType)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
