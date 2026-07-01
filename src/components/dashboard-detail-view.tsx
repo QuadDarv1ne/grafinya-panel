@@ -20,7 +20,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useGraphinyaStore, type TimeRange } from "@/lib/store";
 import { useGraphinyaApi } from "@/hooks/use-grafinya-api";
-import type { Dashboard, Widget, DataSource } from "@/lib/grafinya-api";
+import type { Dashboard, Widget, DataSource, WidgetType } from "@/lib/grafinya-api";
 import {
   DEMO_DASHBOARDS,
   generateTimeSeriesData,
@@ -110,18 +110,20 @@ const CHART_COLORS = [
   "#6366f1",
 ];
 
-const WIDGET_TYPES = [
+const WIDGET_TYPES: { value: WidgetType; label: string; icon: React.ReactNode }[] = [
   { value: "line", label: "Линейный график", icon: <TrendingUp className="h-4 w-4" /> },
   { value: "bar", label: "Столбчатая диаграмма", icon: <BarChart3 className="h-4 w-4" /> },
   { value: "pie", label: "Круговая диаграмма", icon: <Activity className="h-4 w-4" /> },
   { value: "table", label: "Таблица", icon: <Table2 className="h-4 w-4" /> },
+  { value: "gauge", label: "Индикатор", icon: <Activity className="h-4 w-4" /> },
 ];
 
-const WIDGET_ICONS: Record<string, React.ReactNode> = {
+const WIDGET_ICONS: Record<WidgetType, React.ReactNode> = {
   line: <TrendingUp className="h-3.5 w-3.5" />,
   bar: <BarChart3 className="h-3.5 w-3.5" />,
   pie: <Activity className="h-3.5 w-3.5" />,
   table: <Table2 className="h-3.5 w-3.5" />,
+  gauge: <Activity className="h-3.5 w-3.5" />,
 };
 
 /**
@@ -909,7 +911,7 @@ function WidgetEditorDialog({
   isDemo: boolean;
 }) {
   const [title, setTitle] = useState(widget?.title || "");
-  const [type, setType] = useState(widget?.type || "line");
+  const [type, setType] = useState<WidgetType>(widget?.type || "line");
   const [cols, setCols] = useState(widget?.cols || 1);
   const [rows, setRows] = useState(widget?.rows || 2);
   const [dataSourceId, setDataSourceId] = useState(widget?.dataSourceId || "");

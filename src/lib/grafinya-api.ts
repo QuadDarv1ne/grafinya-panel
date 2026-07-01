@@ -47,17 +47,19 @@ export interface DashboardVariable {
   current?: string;
 }
 
+// ---- Widget types ----
+export type WidgetType = "line" | "bar" | "pie" | "table" | "gauge";
+
 export interface Widget {
   id: string;
   title: string;
-  type: string;
+  type: WidgetType;
   cols?: number;
   rows?: number;
   x?: number;
   y?: number;
   dataSourceId?: string;
   query?: string;
-  moduleData?: Record<string, unknown>;
   refreshTime?: number;
 }
 
